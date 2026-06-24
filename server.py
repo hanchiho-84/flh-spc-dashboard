@@ -170,7 +170,9 @@ _hunter_mtimes = {'ICE':{}, 'FHEV':{}}
 
 # ── Database init ──────────────────────────────────────────────
 def init_db():
-    with sqlite3.connect(DB_FILE) as c:
+    with sqlite3.connect(DB_FILE, timeout=30) as c:
+        c.execute("PRAGMA journal_mode=WAL")
+        c.execute("PRAGMA synchronous=NORMAL")
         c.executescript('''
             CREATE TABLE IF NOT EXISTS file_meta (
                 filename TEXT PRIMARY KEY,
@@ -391,7 +393,7 @@ def sync_csv_files():
             return
 
     # Slow path: parse changed files, rebuild cache
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in csv_files:
             fname = os.path.basename(f)
@@ -478,7 +480,7 @@ def sync_battery():
             return
 
     # Slow path: parse changed files, rebuild cache
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in csvs:
             fname = os.path.basename(f)
@@ -552,7 +554,7 @@ def sync_door():
             return
 
     # Slow path: parse changed files, rebuild cache
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in csvs:
             fname = os.path.basename(f)
@@ -626,7 +628,7 @@ def sync_lamp():
             return
 
     # Slow path: parse changed files, rebuild cache
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in csvs:
             fname = os.path.basename(f)
@@ -700,7 +702,7 @@ def sync_vow():
             return
 
     # Slow path: parse changed files, rebuild cache
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in csvs:
             fname = os.path.basename(f)
@@ -790,7 +792,7 @@ def sync_sc():
         if _sc_stats[pt] and len(csvs) == len(_sc_files[pt]):
             if all(_sc_mtimes[pt].get(os.path.basename(f)) == os.path.getmtime(f) for f in csvs):
                 continue
-        with sqlite3.connect(DB_FILE) as conn:
+        with sqlite3.connect(DB_FILE, timeout=30) as conn:
             changed = False
             for f in csvs:
                 fname = os.path.basename(f)
@@ -868,7 +870,7 @@ def sync_hunter():
         if _hunter_stats[pt] and len(csvs) == len(_hunter_files[pt]):
             if all(_hunter_mtimes[pt].get(os.path.basename(f)) == os.path.getmtime(f) for f in csvs):
                 continue
-        with sqlite3.connect(DB_FILE) as conn:
+        with sqlite3.connect(DB_FILE, timeout=30) as conn:
             changed = False
             for f in csvs:
                 fname = os.path.basename(f)
@@ -910,7 +912,7 @@ def sync_sg_files():
         if all(_sg_stats_mtimes.get(os.path.basename(f)) == os.path.getmtime(f) for f in csv_files):
             return
 
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in csv_files:
             fname = os.path.basename(f)
@@ -1048,7 +1050,7 @@ def sync_cmm_files(line_type):
         if all(cached_mtimes.get(os.path.basename(f)) == os.path.getmtime(f) for f in xml_files):
             return
 
-    with sqlite3.connect(DB_FILE) as conn:
+    with sqlite3.connect(DB_FILE, timeout=30) as conn:
         changed = False
         for f in xml_files:
             fname = os.path.basename(f)
@@ -1133,7 +1135,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             line = params.get('line', ['6x'])[0]
             if mode == 'cmm':
                 # Return only the last 30 dates to keep payload small
-                with sqlite3.connect(DB_FILE) as conn:
+                with sqlite3.connect(DB_FILE, timeout=30) as conn:
                     recent = [r[0] for r in conn.execute(
                         'SELECT DISTINCT date FROM cmm_rows WHERE line_type=? '
                         'ORDER BY date DESC LIMIT 30', (line,))]
@@ -1159,7 +1161,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 else:
                     col_filter = ("(m.col LIKE '%AF%' OR m.col LIKE '%AM%') "
                                   "AND m.col NOT IN ('MF_BIW_AFIT','CX743MCA2_2025','B','FLH','LDVersion XX')")
-                with sqlite3.connect(DB_FILE) as conn:
+                with sqlite3.connect(DB_FILE, timeout=30) as conn:
                     rows = conn.execute(
                         f"SELECT m.col, r.serial_no, r.date, m.val "
                         f"FROM measurements m JOIN car_rows r ON m.row_id = r.id "
@@ -1182,7 +1184,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
 
             if mode == 'cmm':
-                with sqlite3.connect(DB_FILE) as conn:
+                with sqlite3.connect(DB_FILE, timeout=30) as conn:
                     rows = conn.execute(
                         'SELECT r.job_id, r.date, m.val '
                         'FROM cmm_meas m JOIN cmm_rows r ON m.row_id = r.id '
@@ -1200,7 +1202,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if date_to:   q += ' AND r.date <= ?'; args.append(date_to)
             q += ' ORDER BY r.date, r.id'
 
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(q, args).fetchall()
 
             data = [{'serial_no': r[0], 'date': r[1], 'val': r[2]} for r in rows]
@@ -1211,7 +1213,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             mode = params.get('mode', ['mf'])[0]
             line = params.get('line', ['6x'])[0]
             if mode == 'cmm':
-                with sqlite3.connect(DB_FILE) as conn:
+                with sqlite3.connect(DB_FILE, timeout=30) as conn:
                     rows = conn.execute(
                         'SELECT col, usl, lsl FROM cmm_specs WHERE line_type=?', (line,)
                     ).fetchall()
@@ -1223,7 +1225,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         # ── /api/settings ───────────────────────────────────────
         elif path == '/api/settings':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 s_rows = conn.execute(
                     'SELECT col, risk_level, control_usl, control_lsl, control_nominal, risk_description, updated_at FROM point_settings'
                 ).fetchall()
@@ -1245,14 +1247,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             send_json(self, {'stats':result,'files':_battery_files})
 
         elif path == '/api/battery/settings':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 try: conn.execute('ALTER TABLE battery_settings ADD COLUMN nom REAL')
                 except Exception: pass
                 rows = conn.execute('SELECT col,ucl,lcl,nom,updated_at FROM battery_settings').fetchall()
             send_json(self, {r[0]:{'ucl':r[1],'lcl':r[2],'nom':r[3],'updated_at':r[4]} for r in rows})
 
         elif path == '/api/battery/trends/all':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(
                     'SELECT m.col,r.serial_no,r.date,m.val '
                     'FROM battery_meas m JOIN battery_rows r ON m.row_id=r.id '
@@ -1274,12 +1276,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             send_json(self, {'stats':result,'files':_door_files})
 
         elif path == '/api/door/settings':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute('SELECT col,ucl,lcl,updated_at FROM door_settings').fetchall()
             send_json(self, {r[0]:{'ucl':r[1],'lcl':r[2],'updated_at':r[3]} for r in rows})
 
         elif path == '/api/door/trends/all':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(
                     'SELECT m.col,r.vin,r.date,m.val '
                     'FROM door_meas m JOIN door_rows r ON m.row_id=r.id '
@@ -1301,12 +1303,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             send_json(self, {'stats':result,'files':_lamp_files})
 
         elif path == '/api/lamp/settings':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute('SELECT col,ucl,lcl,nom,updated_at FROM lamp_settings').fetchall()
             send_json(self, {r[0]:{'ucl':r[1],'lcl':r[2],'nom':r[3],'updated_at':r[4]} for r in rows})
 
         elif path == '/api/lamp/trends/all':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(
                     'SELECT m.col,r.vin,r.date,m.val '
                     'FROM lamp_meas m JOIN lamp_rows r ON m.row_id=r.id '
@@ -1331,13 +1333,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif path in ('/api/sc/ice/settings', '/api/sc/fhev/settings'):
             pt = 'ICE' if 'ice' in path else 'FHEV'
             col_name = list(SC_SPECS[pt].keys())[0]
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 row = conn.execute('SELECT ucl,lcl,updated_at FROM sc_settings WHERE col=?', (col_name,)).fetchone()
             send_json(self, {col_name:{'ucl':row[0],'lcl':row[1],'updated_at':row[2]}} if row else {})
 
         elif path in ('/api/sc/ice/trends/all', '/api/sc/fhev/trends/all'):
             pt = 'ICE' if 'ice' in path else 'FHEV'
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(
                     'SELECT m.col,r.vin,r.date,r.build_phase,m.val '
                     'FROM sc_meas m JOIN sc_rows r ON m.row_id=r.id '
@@ -1359,12 +1361,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             send_json(self, {'stats':result,'files':_vow_files})
 
         elif path == '/api/vow/settings':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute('SELECT col,ucl,lcl,updated_at FROM vow_settings').fetchall()
             send_json(self, {r[0]:{'ucl':r[1],'lcl':r[2],'updated_at':r[3]} for r in rows})
 
         elif path == '/api/vow/trends/all':
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(
                     'SELECT m.col,r.vin,r.date,r.sunroof,m.val '
                     'FROM vow_meas m JOIN vow_rows r ON m.row_id=r.id '
@@ -1387,13 +1389,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             send_json(self, {'stats':result,'files':_hunter_files[pt],'powertrain':pt})
 
         elif path in ('/api/hunter/ice/settings', '/api/hunter/fhev/settings'):
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute('SELECT col,ucl,lcl,nom,updated_at FROM hunter_settings').fetchall()
             send_json(self, {r[0]:{'ucl':r[1],'lcl':r[2],'nom':r[3],'updated_at':r[4]} for r in rows})
 
         elif path in ('/api/hunter/ice/trends/all', '/api/hunter/fhev/trends/all'):
             pt = 'ICE' if 'ice' in path else 'FHEV'
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 rows = conn.execute(
                     'SELECT m.col,r.vin,r.date,r.rot,m.val '
                     'FROM hunter_meas m JOIN hunter_rows r ON m.row_id=r.id '
@@ -1429,7 +1431,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
             ucl = body.get('ucl'); lcl = body.get('lcl'); nom = body.get('nom')
             now = datetime.now().isoformat(timespec='seconds')
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 try: conn.execute('ALTER TABLE battery_settings ADD COLUMN nom REAL')
                 except Exception: pass
                 conn.execute('INSERT OR REPLACE INTO battery_settings (col,ucl,lcl,nom,updated_at) VALUES (?,?,?,?,?)',
@@ -1443,7 +1445,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
             ucl = body.get('ucl'); lcl = body.get('lcl')
             now = datetime.now().isoformat(timespec='seconds')
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 conn.execute('INSERT OR REPLACE INTO door_settings (col,ucl,lcl,updated_at) VALUES (?,?,?,?)',
                              (col, ucl, lcl, now))
                 conn.commit()
@@ -1455,7 +1457,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
             ucl = body.get('ucl'); lcl = body.get('lcl'); nom = body.get('nom')
             now = datetime.now().isoformat(timespec='seconds')
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 conn.execute('INSERT OR REPLACE INTO lamp_settings (col,ucl,lcl,nom,updated_at) VALUES (?,?,?,?,?)',
                              (col, ucl, lcl, nom, now))
                 conn.commit()
@@ -1467,7 +1469,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
             ucl = body.get('ucl'); lcl = body.get('lcl')
             now = datetime.now().isoformat(timespec='seconds')
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 conn.execute('INSERT OR REPLACE INTO vow_settings (col,ucl,lcl,updated_at) VALUES (?,?,?,?)',
                              (col, ucl, lcl, now))
                 conn.commit()
@@ -1479,7 +1481,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
             ucl = body.get('ucl'); lcl = body.get('lcl')
             now = datetime.now().isoformat(timespec='seconds')
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 conn.execute('INSERT OR REPLACE INTO sc_settings (col,ucl,lcl,updated_at) VALUES (?,?,?,?)',
                              (col, ucl, lcl, now))
                 conn.commit()
@@ -1491,7 +1493,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 send_json(self, {'error': 'col required'}); return
             ucl = body.get('ucl'); lcl = body.get('lcl'); nom = body.get('nom')
             now = datetime.now().isoformat(timespec='seconds')
-            with sqlite3.connect(DB_FILE) as conn:
+            with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 conn.execute('INSERT OR REPLACE INTO hunter_settings (col,ucl,lcl,nom,updated_at) VALUES (?,?,?,?,?)',
                              (col, ucl, lcl, nom, now))
                 conn.commit()
@@ -1501,7 +1503,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not col:
             send_json(self, {'error': 'col required'}); return
 
-        with sqlite3.connect(DB_FILE) as conn:
+        with sqlite3.connect(DB_FILE, timeout=30) as conn:
             row = conn.execute(
                 'SELECT risk_level, control_usl, control_lsl, control_nominal, risk_description FROM point_settings WHERE col=?', (col,)
             ).fetchone()
