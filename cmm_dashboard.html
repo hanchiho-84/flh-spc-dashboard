@@ -10,7 +10,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--g50);color:var(--g900);font-size:14px;line-height:1.5}
 
-#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(150deg,#1e3a8a,#2563eb 60%,#60a5fa);color:#fff;z-index:999}
+#loading{position:fixed;top:var(--hh);left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(150deg,#1e3a8a,#2563eb 60%,#60a5fa);color:#fff;z-index:999}
 .spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:20px}
 .spin-sm{width:20px;height:20px;border:2px solid var(--g300);border-top-color:var(--g500);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -457,8 +457,7 @@ async function switchMode(mode){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelector('.tab').classList.add('on');
   document.getElementById('panel-summary').classList.add('on');
-  // Show loading overlay
-  document.getElementById('app').style.display='none';
+  // Show loading overlay (content area only; header stays visible)
   document.getElementById('loading').style.display='flex';
   await loadData(mode);
 }
