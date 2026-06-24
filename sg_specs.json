@@ -1,0 +1,485 @@
+{
+  "matched": {
+    "L101AGY": {
+      "usl": 17.5,
+      "nom": 16.0,
+      "lsl": 14.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L102AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L103AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L104AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L105AGY": {
+      "usl": 16.7,
+      "nom": 15.2,
+      "lsl": 13.7,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L106AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L110AGY": {
+      "usl": 14.0,
+      "nom": 12.0,
+      "lsl": 11.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L109AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L108AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L107AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L111AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R104AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R105AGY": {
+      "usl": 16.7,
+      "nom": 15.2,
+      "lsl": 13.7,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R106AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R107AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R103AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R108AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R102AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R109AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R101AGY": {
+      "usl": 17.5,
+      "nom": 16.0,
+      "lsl": 14.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R111AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "R110AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "FRONT DOOR"
+    },
+    "L112AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L113AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L120AGY": {
+      "usl": 13.3,
+      "nom": 11.8,
+      "lsl": 10.3,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L114AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L119AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L115AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L116AGY": {
+      "usl": 15.0,
+      "nom": 13.5,
+      "lsl": 12.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L117AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L118AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L124AGY": {
+      "usl": 16.4,
+      "nom": 14.9,
+      "lsl": 13.4,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L123AGY": {
+      "usl": 16.4,
+      "nom": 14.9,
+      "lsl": 13.4,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L122AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L121AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R115AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R116AGY": {
+      "usl": 15.0,
+      "nom": 13.5,
+      "lsl": 12.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R117AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R118AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R114AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R119AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R113AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R120AGY": {
+      "usl": 13.3,
+      "nom": 11.8,
+      "lsl": 10.3,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R112AGY": {
+      "usl": 16.0,
+      "nom": 14.5,
+      "lsl": 13.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R124AGY": {
+      "usl": 16.4,
+      "nom": 14.9,
+      "lsl": 13.4,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R123AGY": {
+      "usl": 16.4,
+      "nom": 14.9,
+      "lsl": 13.4,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R122AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "R121AGY": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "REAR DOOR"
+    },
+    "L204AGZ": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "L205AGX": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "L206AGX": {
+      "usl": 12.0,
+      "nom": 10.0,
+      "lsl": 8.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "L207AGX": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "L203AGZ": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "C208AGX": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "C202AGZ": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "R207AGX": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "R203AGZ": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "R204AGZ": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "R205AGZ": {
+      "usl": 13.5,
+      "nom": 12.0,
+      "lsl": 10.5,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    },
+    "R206AGX": {
+      "usl": 12.0,
+      "nom": 10.0,
+      "lsl": 8.0,
+      "unit": "mm",
+      "type": "Seal Gap",
+      "area": "LIFTGATE"
+    }
+  },
+  "unmatched": []
+}

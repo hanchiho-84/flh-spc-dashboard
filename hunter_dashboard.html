@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hunter 四輪定位 SPC</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.topbar{background:#1e293b;border-bottom:1px solid rgba(255,255,255,.08);padding:10px 20px;display:flex;align-items:center;gap:14px}
+.back-btn{color:#3b82f6;text-decoration:none;font-size:13px;font-weight:600;border:1px solid #3b82f6;padding:4px 12px;border-radius:6px;white-space:nowrap}
+.back-btn:hover{background:rgba(59,130,246,.12)}
+.topbar-title{font-size:16px;font-weight:700;color:#f1f5f9}
+.topbar-sub{font-size:12px;color:#64748b;margin-left:auto}
+.badge{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+
+/* KPI row */
+.kpi-row{display:flex;gap:12px;padding:16px 20px 0;flex-wrap:wrap}
+.kpi{background:#1e293b;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 16px;min-width:120px;flex:1}
+.kpi-label{color:#64748b;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.kpi-val{font-size:20px;font-weight:700;color:#f1f5f9}
+.kpi-val.good{color:#22c55e}
+.kpi-val.warn{color:#f59e0b}
+.kpi-val.bad{color:#ef4444}
+
+/* Tab switcher */
+.tabs{display:flex;gap:0;margin:16px 20px 0;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,.1);width:fit-content}
+.tab{padding:8px 28px;font-size:13px;font-weight:600;cursor:pointer;background:#1e293b;color:#94a3b8;border:none;transition:all .15s}
+.tab.active-ice{background:#1d4ed8;color:#fff}
+.tab.active-fhev{background:#15803d;color:#fff}
+.tab:hover:not(.active-ice):not(.active-fhev){background:#253347;color:#e2e8f0}
+
+/* Stats overview table */
+.section{padding:16px 20px 0}
+.section-title{font-size:12px;font-weight:700;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+
+.overview-wrap{overflow-x:auto}
+.overview-table{width:100%;border-collapse:collapse;font-size:12px}
+.overview-table th{background:#0f172a;color:#64748b;font-weight:600;padding:6px 10px;text-align:left;white-space:nowrap;position:sticky;top:0}
+.overview-table td{padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap}
+.overview-table tr:hover td{background:rgba(255,255,255,.03)}
+.ppk-cell{font-weight:700;text-align:center}
+.ppk-good{color:#22c55e}
+.ppk-warn{color:#f59e0b}
+.ppk-bad{color:#ef4444}
+.ppk-na{color:#475569}
+.oos-bad{color:#ef4444;font-weight:700}
+.group-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600}
+
+/* Charts grid */
+.charts-content{padding:0 20px 20px}
+.group-section{margin-top:20px}
+.group-header{font-size:13px;font-weight:700;color:#cbd5e1;margin-bottom:10px;padding:6px 12px;background:#1e293b;border-radius:6px;border-left:3px solid #3b82f6}
+.charts-grid{display:grid;gap:10px}
+.charts-grid-3{grid-template-columns:repeat(3,1fr)}
+.charts-grid-2{grid-template-columns:repeat(2,1fr)}
+.chart-card{background:#1e293b;border:1px solid rgba(255,255,255,.07);border-radius:10px;overflow:hidden}
+.chart-card-header{padding:8px 12px 4px;display:flex;justify-content:space-between;align-items:center}
+.chart-card-label{font-size:12px;font-weight:600;color:#cbd5e1}
+.chart-card-ppk{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px}
+.chart-div{height:180px}
+
+/* Data table */
+.data-section{padding:0 20px 20px;margin-top:6px}
+.data-wrap{max-height:320px;overflow-y:auto;border:1px solid rgba(255,255,255,.07);border-radius:8px}
+.data-table{width:100%;border-collapse:collapse;font-size:11px}
+.data-table th{background:#0f172a;color:#64748b;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap}
+.data-table td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-family:monospace}
+.data-table tr:hover td{background:rgba(255,255,255,.03)}
+td.oos{color:#ef4444;font-weight:700}
+td.pt-ice{color:#93c5fd}
+td.pt-fhev{color:#86efac}
+
+/* Files */
+.files-section{padding:0 20px 24px}
+.files-wrap{display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow-y:auto}
+.file-chip{background:#0f172a;border:1px solid rgba(255,255,255,.08);border-radius:4px;padding:2px 8px;font-size:10px;color:#64748b}
+
+@media(max-width:900px){.charts-grid-3{grid-template-columns:repeat(2,1fr)}.charts-grid-2{grid-template-columns:1fr}}
+@media(max-width:600px){.charts-grid-3,.charts-grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back-btn" href="/index.html">← 返回首頁</a>
+  <div class="topbar-title">Hunter 四輪定位 SPC</div>
+  <span class="badge">ICE + FHEV · 20 量測點</span>
+  <div class="topbar-sub" id="lastUpdate">載入中…</div>
+</div>
+
+<div class="kpi-row" id="kpiRow">
+  <div class="kpi"><div class="kpi-label">ICE 車輛數</div><div class="kpi-val" id="kpiIceN">—</div></div>
+  <div class="kpi"><div class="kpi-label">ICE 最低 Ppk</div><div class="kpi-val" id="kpiIcePpk">—</div></div>
+  <div class="kpi"><div class="kpi-label">ICE 超規</div><div class="kpi-val" id="kpiIceOos">—</div></div>
+  <div class="kpi"><div class="kpi-label">FHEV 車輛數</div><div class="kpi-val" id="kpiFhevN">—</div></div>
+  <div class="kpi"><div class="kpi-label">FHEV 最低 Ppk</div><div class="kpi-val" id="kpiFhevPpk">—</div></div>
+  <div class="kpi"><div class="kpi-label">FHEV 超規</div><div class="kpi-val" id="kpiFhevOos">—</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active-ice" id="tabIce" onclick="switchTab('ICE')">ICE</button>
+  <button class="tab" id="tabFhev" onclick="switchTab('FHEV')">FHEV</button>
+</div>
+
+<div class="section">
+  <div class="section-title">量測能力總覽</div>
+  <div class="overview-wrap">
+    <table class="overview-table" id="overviewTable">
+      <thead><tr>
+        <th>量測項目</th><th>群組</th><th>USL</th><th>LSL</th><th>NOM</th>
+        <th>n</th><th>平均</th><th>標準差</th><th>Ppk</th><th>超規</th>
+      </tr></thead>
+      <tbody id="overviewBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="charts-content" id="chartsContent"></div>
+
+<div class="data-section">
+  <div class="section-title">原始數據</div>
+  <div class="data-wrap">
+    <table class="data-table">
+      <thead><tr id="dataHead"></tr></thead>
+      <tbody id="dataBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="files-section">
+  <div class="section-title">CSV 來源</div>
+  <div class="files-wrap" id="filesWrap"></div>
+</div>
+
+<script>
+// ── Specs (mirrors server HUNTER_SPECS) ─────────────────────────
+const SPECS = {
+  'Camber Front Left':        {usl:0.05,  lsl:-0.95, nom:-0.45, unit:'deg',label:'Camber FL',      group:'Camber'},
+  'Camber Front Right':       {usl:0.00,  lsl:-1.00, nom:-0.45, unit:'deg',label:'Camber FR',      group:'Camber'},
+  'Camber Front Cross (L-R)': {usl:0.70,  lsl:-0.70, nom:0.00,  unit:'deg',label:'Camber F Cross', group:'Camber'},
+  'Camber Rear Left':         {usl:-0.83, lsl:-1.83, nom:-1.33, unit:'deg',label:'Camber RL',      group:'Camber'},
+  'Camber Rear Right':        {usl:-0.83, lsl:-1.83, nom:-1.33, unit:'deg',label:'Camber RR',      group:'Camber'},
+  'Caster Front Left':        {usl:7.75,  lsl:6.25,  nom:7.00,  unit:'deg',label:'Caster FL',      group:'Caster'},
+  'Caster Front Right':       {usl:7.75,  lsl:6.25,  nom:7.00,  unit:'deg',label:'Caster FR',      group:'Caster'},
+  'Caster Front Cross (L-R)': {usl:0.70,  lsl:-0.70, nom:0.00,  unit:'deg',label:'Caster F Cross', group:'Caster'},
+  'Toe-in Front Toe L':       {usl:0.200, lsl:-0.04, nom:0.08,  unit:'deg',label:'Toe F-L',        group:'Toe-in'},
+  'Toe-in Front Toe R':       {usl:0.200, lsl:-0.04, nom:0.08,  unit:'deg',label:'Toe F-R',        group:'Toe-in'},
+  'Toe-in Front Total':       {usl:0.320, lsl:0.00,  nom:0.16,  unit:'deg',label:'Toe F Total',    group:'Toe-in'},
+  'Toe-in Rear Toe L':        {usl:0.200, lsl:-0.04, nom:0.08,  unit:'deg',label:'Toe R-L',        group:'Toe-in'},
+  'Toe-in Rear Toe R':        {usl:0.200, lsl:-0.04, nom:0.08,  unit:'deg',label:'Toe R-R',        group:'Toe-in'},
+  'Toe-in Rear Total':        {usl:0.320, lsl:0.00,  nom:0.16,  unit:'deg',label:'Toe R Total',    group:'Toe-in'},
+  'Thrust Angle':             {usl:0.50,  lsl:-0.50, nom:0.00,  unit:'deg',label:'Thrust Angle',   group:'Angle'},
+  'Ride Height Front Left':   {usl:465,   lsl:435,   nom:450,   unit:'mm', label:'RH F-L',         group:'Ride Height'},
+  'Ride Height Front Right':  {usl:465,   lsl:435,   nom:450,   unit:'mm', label:'RH F-R',         group:'Ride Height'},
+  'Ride Height Rear Left':    {usl:470,   lsl:440,   nom:455,   unit:'mm', label:'RH R-L',         group:'Ride Height'},
+  'Ride Height Rear Right':   {usl:470,   lsl:440,   nom:455,   unit:'mm', label:'RH R-R',         group:'Ride Height'},
+  'CV':                       {usl:2.00,  lsl:-2.00, nom:0.00,  unit:'deg',label:'CV',             group:'Angle'},
+};
+
+const GROUPS = ['Camber','Caster','Toe-in','Angle','Ride Height'];
+const GROUP_COLS = {
+  'Camber':      ['Camber Front Left','Camber Front Right','Camber Front Cross (L-R)','Camber Rear Left','Camber Rear Right'],
+  'Caster':      ['Caster Front Left','Caster Front Right','Caster Front Cross (L-R)'],
+  'Toe-in':      ['Toe-in Front Toe L','Toe-in Front Toe R','Toe-in Front Total','Toe-in Rear Toe L','Toe-in Rear Toe R','Toe-in Rear Total'],
+  'Angle':       ['Thrust Angle','CV'],
+  'Ride Height': ['Ride Height Front Left','Ride Height Front Right','Ride Height Rear Left','Ride Height Rear Right'],
+};
+const GROUP_COLORS = {
+  'Camber':'#3b82f6','Caster':'#8b5cf6','Toe-in':'#f59e0b','Angle':'#ef4444','Ride Height':'#10b981'
+};
+
+const ICE_COLOR  = '#3b82f6';
+const FHEV_COLOR = '#22c55e';
+
+// ── State ────────────────────────────────────────────────────────
+let activeTab = 'ICE';
+let allData   = {ICE:{}, FHEV:{}};
+let settings  = {};
+let statsData = {ICE:{}, FHEV:{}};
+let allFiles  = {ICE:[], FHEV:[]};
+let kpiCache  = {};
+
+// ── SPC detection ────────────────────────────────────────────────
+function detectSPC(pts, mean, sigma) {
+  if (!sigma || pts.length < 2) return {rules:[], warnIdx:new Set(), ruleSpans:[]};
+  const v = pts.map(p=>p.val), n = v.length;
+  const triggered=[], wi=new Set(), ruleSpans=[];
+  function mark(r,a,b){triggered.push(r);for(let k=a;k<=b;k++)wi.add(k);ruleSpans.push({rn:r,x0:a,x1:b});}
+  // R1: beyond 3σ
+  for(let i=0;i<n;i++) if(Math.abs(v[i]-mean)>3*sigma) mark(1,i,i);
+  // R2: 9 same side
+  for(let i=0;i<=n-9;i++){const s=v[i]>mean?1:-1;if(v.slice(i,i+9).every(x=>(x>mean?1:-1)===s))mark(2,i,i+8);}
+  // R3: 6 consecutive trend
+  for(let i=0;i<=n-6;i++){let up=0,dn=0;for(let k=i;k<i+5;k++){if(v[k+1]>v[k])up++;else if(v[k+1]<v[k])dn++;}if(up===5||dn===5)mark(3,i,i+5);}
+  // R4: 14 alternating
+  for(let i=0;i<=n-14;i++){let ok=true;for(let k=i;k<i+13;k++)if(!((v[k]>v[k+1])!==(v[k+1]>v[k+2]))){ok=false;break;}if(ok)mark(4,i,i+13);}
+  // R5: 2 of 3 beyond 2σ
+  for(let i=0;i<=n-3;i++){const c=v.slice(i,i+3).filter(x=>Math.abs(x-mean)>2*sigma).length;if(c>=2)mark(5,i,i+2);}
+  // R6: 4 of 5 beyond 1σ
+  for(let i=0;i<=n-5;i++){const c=v.slice(i,i+5).filter(x=>Math.abs(x-mean)>sigma).length;if(c>=4)mark(6,i,i+4);}
+  // R7: 15 within 1σ
+  for(let i=0;i<=n-15;i++){if(v.slice(i,i+15).every(x=>Math.abs(x-mean)<=sigma))mark(7,i,i+14);}
+  // R8: 8 outside 1σ
+  for(let i=0;i<=n-8;i++){if(v.slice(i,i+8).every(x=>Math.abs(x-mean)>sigma))mark(8,i,i+7);}
+  return {rules:[...new Set(triggered)].sort((a,b)=>a-b), warnIdx:wi, ruleSpans};
+}
+
+function calcPpk(vals, usl, lsl) {
+  const n=vals.length; if(n<2) return null;
+  const m=vals.reduce((a,b)=>a+b,0)/n;
+  const s=Math.sqrt(vals.reduce((a,b)=>a+(b-m)**2,0)/(n-1));
+  if(s===0) return null;
+  const pu=(usl-m)/(3*s), pl=(m-lsl)/(3*s);
+  return Math.min(pu,pl);
+}
+
+function fmtN(v,d=3){return v==null?'—':v.toFixed(d);}
+
+function ppkColor(v){if(v==null)return '#475569';if(v>=1.33)return '#22c55e';if(v>=1.0)return '#f59e0b';return '#ef4444';}
+
+// ── Tab switching ────────────────────────────────────────────────
+function switchTab(pt) {
+  activeTab = pt;
+  document.getElementById('tabIce').className  = 'tab' + (pt==='ICE'?' active-ice':'');
+  document.getElementById('tabFhev').className = 'tab' + (pt==='FHEV'?' active-fhev':'');
+  renderOverview();
+  renderCharts();
+  renderDataTable();
+  renderFiles();
+}
+
+// ── Overview table ───────────────────────────────────────────────
+function renderOverview() {
+  const tbody = document.getElementById('overviewBody');
+  const rows = [];
+  const sd = statsData[activeTab];
+  const td = allData[activeTab];
+  for (const col of Object.keys(SPECS)) {
+    const sp = SPECS[col];
+    const st = sd[col];
+    const n  = st ? st.n : 0;
+    const mean = st ? st.mean : null;
+    const std  = st ? st.std  : null;
+    const vals = td[col] ? td[col].map(p=>p.val) : [];
+    const ppk  = vals.length>=2 ? calcPpk(vals, sp.usl, sp.lsl) : null;
+    const oos  = vals.filter(v=>v>sp.usl||v<sp.lsl).length;
+    const gc = GROUP_COLORS[sp.group]||'#64748b';
+    rows.push(`<tr>
+      <td>${sp.label}</td>
+      <td><span class="group-tag" style="background:${gc}22;color:${gc};border:1px solid ${gc}44">${sp.group}</span></td>
+      <td style="color:#94a3b8">${sp.usl}</td>
+      <td style="color:#94a3b8">${sp.lsl}</td>
+      <td style="color:#94a3b8">${sp.nom}</td>
+      <td>${n||'—'}</td>
+      <td>${fmtN(mean,4)}</td>
+      <td>${fmtN(std,4)}</td>
+      <td class="ppk-cell" style="color:${ppkColor(ppk)}">${ppk!=null?ppk.toFixed(3):'—'}</td>
+      <td class="${oos>0?'oos-bad':''}">${oos||'0'}</td>
+    </tr>`);
+  }
+  tbody.innerHTML = rows.join('');
+}
+
+// ── Charts ───────────────────────────────────────────────────────
+function renderCharts() {
+  const container = document.getElementById('chartsContent');
+  // Purge existing charts
+  container.querySelectorAll('.chart-div').forEach(el=>Plotly.purge(el));
+  container.innerHTML = '';
+
+  const color = activeTab === 'ICE' ? ICE_COLOR : FHEV_COLOR;
+  const td = allData[activeTab];
+  const sd = statsData[activeTab];
+
+  for (const grp of GROUPS) {
+    const cols = GROUP_COLS[grp];
+    const gc = GROUP_COLORS[grp];
+    const gridClass = (grp==='Camber'||grp==='Toe-in') ? 'charts-grid-3' :
+                      (grp==='Caster') ? 'charts-grid-3' :
+                      (grp==='Ride Height') ? 'charts-grid-2' : 'charts-grid-2';
+
+    const sec = document.createElement('div');
+    sec.className = 'group-section';
+    sec.innerHTML = `<div class="group-header" style="border-left-color:${gc}">${grp}</div>
+      <div class="charts-grid ${gridClass}" id="grid_${grp.replace(/ /g,'_')}"></div>`;
+    container.appendChild(sec);
+
+    const grid = sec.querySelector('.charts-grid');
+    for (const col of cols) {
+      const sp = SPECS[col];
+      const pts = (td[col]||[]);
+      const st  = sd[col];
+      const vals = pts.map(p=>p.val);
+      const ppk  = vals.length>=2 ? calcPpk(vals,sp.usl,sp.lsl) : null;
+      const mean = st ? st.mean : null;
+      const std  = st ? st.std  : null;
+
+      const card = document.createElement('div');
+      card.className = 'chart-card';
+      const ppkHtml = ppk!=null
+        ? `<span class="chart-card-ppk" style="background:${ppkColor(ppk)}22;color:${ppkColor(ppk)};border:1px solid ${ppkColor(ppk)}44">Ppk ${ppk.toFixed(2)}</span>`
+        : '';
+      card.innerHTML = `
+        <div class="chart-card-header">
+          <span class="chart-card-label">${sp.label}</span>${ppkHtml}
+        </div>
+        <div class="chart-div" id="chart_${col.replace(/[^a-zA-Z0-9]/g,'_')}"></div>`;
+      grid.appendChild(card);
+    }
+  }
+
+  // Actually render each chart (after DOM is ready)
+  requestAnimationFrame(() => {
+    for (const grp of GROUPS) {
+      for (const col of GROUP_COLS[grp]) {
+        renderOneChart(col, color);
+      }
+    }
+  });
+}
+
+function renderOneChart(col, color) {
+  const divId = 'chart_' + col.replace(/[^a-zA-Z0-9]/g,'_');
+  const el = document.getElementById(divId);
+  if (!el) return;
+
+  const sp   = SPECS[col];
+  const pts  = (allData[activeTab][col]||[]);
+  const st   = statsData[activeTab][col];
+  const mean = st ? st.mean : null;
+  const std  = st ? st.std  : null;
+
+  // Get control limits from settings
+  const sv    = settings[col] || {};
+  const ucl   = sv.ucl != null ? sv.ucl : (mean!=null && std!=null ? mean+3*std : null);
+  const lcl   = sv.lcl != null ? sv.lcl : (mean!=null && std!=null ? mean-3*std : null);
+
+  const xs  = pts.map((_,i)=>i);
+  const ys  = pts.map(p=>p.val);
+  const labels = pts.map(p=>`VIN: ${p.serial_no||'?'}<br>日期: ${p.date}<br>值: ${p.val}`);
+
+  const spc = (mean!=null && std!=null) ? detectSPC(pts, mean, std) : {rules:[],warnIdx:new Set(),ruleSpans:[]};
+  const ptColors = xs.map(i=>{
+    const v=ys[i];
+    if(v>sp.usl||v<sp.lsl) return '#ef4444';
+    if(spc.warnIdx.has(i)) return '#f59e0b';
+    return color;
+  });
+
+  const shapes = [];
+  // SPC rule spans
+  for (const {rn,x0,x1} of spc.ruleSpans) {
+    shapes.push({type:'rect',xref:'x',yref:'paper',x0:x0-.5,x1:x1+.5,y0:0,y1:1,
+      fillcolor:'rgba(245,158,11,.1)',line:{width:0}});
+  }
+  // Spec lines
+  const specLines = (v,clr,dash) => ({type:'line',xref:'paper',yref:'y',x0:0,x1:1,y0:v,y1:v,
+    line:{color:clr,width:1,dash:dash||'solid'}});
+  shapes.push(specLines(sp.usl,'#ef4444','dot'));
+  shapes.push(specLines(sp.lsl,'#ef4444','dot'));
+  if(sp.nom!=null) shapes.push(specLines(sp.nom,'#94a3b8','dash'));
+  if(mean!=null)   shapes.push(specLines(mean,color,'solid'));
+  if(ucl!=null)    shapes.push(specLines(ucl,'#f59e0b','dashdot'));
+  if(lcl!=null)    shapes.push(specLines(lcl,'#f59e0b','dashdot'));
+
+  const annotations = spc.ruleSpans.map(({rn,x0,x1})=>({
+    xref:'x',yref:'paper',x:(x0+x1)/2,y:.99,xanchor:'center',yanchor:'top',
+    text:`<b>R${rn}</b>`,showarrow:false,
+    font:{size:8,color:'#92400e'},bgcolor:'rgba(255,251,235,.88)',bordercolor:'#d97706',borderwidth:1,borderpad:2
+  }));
+
+  Plotly.newPlot(el, [{
+    x:xs, y:ys, mode:'lines+markers', type:'scatter',
+    marker:{color:ptColors,size:5,symbol:'circle'},
+    line:{color:color,width:1},
+    text:labels, hovertemplate:'%{text}<extra></extra>',
+    showlegend:false
+  }], {
+    paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+    margin:{l:38,r:6,t:4,b:28},
+    height:180,
+    xaxis:{color:'#475569',tickfont:{size:9},gridcolor:'rgba(255,255,255,.04)',showgrid:true,zeroline:false},
+    yaxis:{color:'#475569',tickfont:{size:9},gridcolor:'rgba(255,255,255,.04)',showgrid:true,zeroline:false,
+           tickformat:sp.unit==='mm'?'~g':'.3f'},
+    shapes, annotations,
+    font:{family:'system-ui',color:'#94a3b8'},
+    hovermode:'closest'
+  }, {responsive:true, displayModeBar:'hover'});
+}
+
+// ── Data table (last 60 rows) ────────────────────────────────────
+function renderDataTable() {
+  const SHOW_COLS = ['Camber Front Left','Camber Front Right','Camber Rear Left','Camber Rear Right',
+    'Caster Front Left','Caster Front Right','Toe-in Front Total','Toe-in Rear Total',
+    'Thrust Angle','Ride Height Front Left','Ride Height Rear Left','CV'];
+
+  const headEl = document.getElementById('dataHead');
+  headEl.innerHTML = '<th>日期</th><th>VIN</th><th>Rot#</th>' +
+    SHOW_COLS.map(c=>`<th>${SPECS[c]?SPECS[c].label:c}</th>`).join('');
+
+  const td = allData[activeTab];
+  // Build rows keyed by index (each col has same-length arrays)
+  const refCol = SHOW_COLS.find(c=>td[c]&&td[c].length>0);
+  if (!refCol) { document.getElementById('dataBody').innerHTML='<tr><td colspan="30" style="color:#475569;padding:12px">無資料</td></tr>'; return; }
+
+  const refPts = td[refCol];
+  const rows = refPts.slice(-60).reverse().map((_,ri)=>{
+    const i = refPts.length - 1 - ri;
+    const base = refPts[i];
+    const cells = SHOW_COLS.map(col=>{
+      const p = (td[col]||[])[i];
+      if (!p) return '<td>—</td>';
+      const sp = SPECS[col];
+      const oos = p.val>sp.usl||p.val<sp.lsl;
+      return `<td class="${oos?'oos':''}">${p.val.toFixed(3)}</td>`;
+    }).join('');
+    return `<tr><td>${base.date||'—'}</td><td>${base.serial_no||'—'}</td><td>${base.rot||'—'}</td>${cells}</tr>`;
+  });
+  document.getElementById('dataBody').innerHTML = rows.join('');
+}
+
+// ── Files ────────────────────────────────────────────────────────
+function renderFiles() {
+  const wrap = document.getElementById('filesWrap');
+  const files = allFiles[activeTab] || [];
+  wrap.innerHTML = files.map(f=>`<span class="file-chip">${f}</span>`).join('') || '<span style="color:#475569">無檔案</span>';
+}
+
+// ── KPI ──────────────────────────────────────────────────────────
+function updateKpi(pt, statsArr, trendsData) {
+  const ns = pt==='ICE' ? ['kpiIceN','kpiIcePpk','kpiIceOos'] : ['kpiFhevN','kpiFhevPpk','kpiFhevOos'];
+  const color = pt==='ICE' ? ICE_COLOR : FHEV_COLOR;
+
+  // unique vehicles from first available col
+  const refCol = Object.keys(trendsData)[0];
+  const nVehicles = refCol ? trendsData[refCol].length : 0;
+
+  // min Ppk across all cols
+  let minPpk = Infinity, oosTotal = 0;
+  for (const col of Object.keys(SPECS)) {
+    const sp = SPECS[col];
+    const vals = (trendsData[col]||[]).map(p=>p.val);
+    if (vals.length >= 2) {
+      const ppk = calcPpk(vals, sp.usl, sp.lsl);
+      if (ppk != null && ppk < minPpk) minPpk = ppk;
+    }
+    oosTotal += vals.filter(v=>v>sp.usl||v<sp.lsl).length;
+  }
+  if (minPpk === Infinity) minPpk = null;
+
+  const nEl = document.getElementById(ns[0]);
+  const pEl = document.getElementById(ns[1]);
+  const oEl = document.getElementById(ns[2]);
+  nEl.textContent = nVehicles || '—';
+  nEl.style.color = color;
+  if (minPpk != null) {
+    pEl.textContent = minPpk.toFixed(3);
+    pEl.className = 'kpi-val ' + (minPpk>=1.33?'good':minPpk>=1.0?'warn':'bad');
+  } else { pEl.textContent='—'; pEl.className='kpi-val'; }
+  oEl.textContent = oosTotal;
+  oEl.className = 'kpi-val ' + (oosTotal===0?'good':oosTotal<=3?'warn':'bad');
+}
+
+// ── Safe JSON fetch ──────────────────────────────────────────────
+async function safeJson(url) {
+  const r = await fetch(url);
+  const text = await r.text();
+  if (!r.ok || text.trimStart().startsWith('<')) {
+    throw new Error(`${url} → HTTP ${r.status}  (HTML 回應 — 請先重啟伺服器 python server.py)`);
+  }
+  return JSON.parse(text);
+}
+
+// ── Main load ────────────────────────────────────────────────────
+async function loadAll() {
+  try {
+    settings = await safeJson('/api/hunter/ice/settings');
+
+    const [iceStats, iceTrends, fhevStats, fhevTrends] = await Promise.all([
+      safeJson('/api/hunter/ice/stats'),
+      safeJson('/api/hunter/ice/trends/all'),
+      safeJson('/api/hunter/fhev/stats'),
+      safeJson('/api/hunter/fhev/trends/all'),
+    ]);
+
+    for (const s of iceStats.stats||[])  statsData.ICE[s.col]  = s;
+    for (const s of fhevStats.stats||[]) statsData.FHEV[s.col] = s;
+    allData.ICE  = iceTrends;
+    allData.FHEV = fhevTrends;
+    allFiles.ICE  = iceStats.files  || [];
+    allFiles.FHEV = fhevStats.files || [];
+
+    updateKpi('ICE',  iceStats.stats,  iceTrends);
+    updateKpi('FHEV', fhevStats.stats, fhevTrends);
+
+    const total = allFiles.ICE.length + allFiles.FHEV.length;
+    document.getElementById('lastUpdate').textContent =
+      `${total} CSVs · ICE ${allFiles.ICE.length} / FHEV ${allFiles.FHEV.length}`;
+
+    switchTab('ICE');
+  } catch(e) {
+    console.error(e);
+    document.getElementById('lastUpdate').textContent = '載入失敗: ' + e.message;
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>

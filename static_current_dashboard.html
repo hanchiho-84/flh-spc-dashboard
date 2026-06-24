@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>靜態電流監控</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+:root{--blue:#3b82f6;--red:#ef4444;--amber:#f59e0b;--g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;--g400:#94a3b8;--g500:#64748b;--g600:#475569;--g700:#334155;--g900:#0f172a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--g50);color:var(--g900)}
+.loading{position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#0f172a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
+.spin{width:44px;height:44px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ld-title{color:#fff;font-size:22px;font-weight:700}
+.ld-sub{color:rgba(255,255,255,.6);font-size:14px}
+.app{display:none}
+.topbar{background:#fff;border-bottom:1px solid var(--g200);padding:12px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.back-btn{color:var(--blue);font-size:13px;font-weight:500;text-decoration:none;padding:5px 12px;border:1px solid var(--blue);border-radius:6px;transition:all .15s;white-space:nowrap}
+.back-btn:hover{background:var(--blue);color:#fff}
+.topbar-title{font-size:16px;font-weight:700;flex:1}
+.topbar-badge{background:var(--g100);border:1px solid var(--g200);padding:4px 12px;border-radius:20px;font-size:12px;color:var(--g500);white-space:nowrap}
+.content{max-width:1100px;margin:0 auto;padding:24px 20px;display:flex;flex-direction:column;gap:20px}
+.pt-header{display:flex;align-items:center;gap:10px;padding:10px 0 4px}
+.pt-badge{padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700;color:#fff}
+.pt-ice{background:#1d4ed8}
+.pt-fhev{background:#15803d}
+.pt-title{font-size:17px;font-weight:700}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:16px 18px}
+.kpi-val{font-size:26px;font-weight:700;line-height:1.2}
+.kpi-lbl{font-size:12px;color:var(--g500);margin-top:3px}
+.c-good .kpi-val{color:#16a34a}
+.c-warn .kpi-val{color:#d97706}
+.c-bad .kpi-val{color:var(--red)}
+.sec{background:#fff;border:1px solid var(--g200);border-radius:14px;overflow:hidden}
+.sec-hd{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.sec-title{font-size:15px;font-weight:700}
+.sec-sub{font-size:12px;color:var(--g500);margin-top:2px}
+.sec-divider{height:4px;margin:0}
+.sec-ice{background:linear-gradient(90deg,#1d4ed8,#3b82f6)}
+.sec-fhev{background:linear-gradient(90deg,#15803d,#22c55e)}
+.spec-row{display:flex;gap:20px;padding:10px 20px;font-size:12px;border-bottom:1px solid var(--g100);flex-wrap:wrap}
+.spec-item{display:flex;gap:5px;align-items:center}
+.spec-lbl{color:var(--g500)}
+.spec-val{font-weight:700}
+.meas-body{display:grid;grid-template-columns:1fr 260px}
+.chart-area{padding:12px 16px 4px}
+.stat-panel{border-left:1px solid var(--g100);padding:16px;display:flex;flex-direction:column}
+.cpk-big{text-align:center;padding:10px 0 12px;border-bottom:1px solid var(--g100);margin-bottom:8px}
+.cpk-num{font-size:34px;font-weight:700;line-height:1}
+.cpk-lbl{font-size:11px;color:var(--g500);margin-top:4px}
+.sr{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g100);font-size:12px}
+.sr:last-child{border-bottom:none}
+.sr-l{color:var(--g500)}
+.sr-v{font-weight:600}
+.s-g{color:#16a34a;text-align:center;padding:5px;background:rgba(22,163,74,.08);border-radius:6px;font-size:11px;font-weight:600;margin-top:8px}
+.s-a{color:#d97706;text-align:center;padding:5px;background:rgba(245,158,11,.1);border-radius:6px;font-size:11px;font-weight:600;margin-top:8px}
+.s-r{color:var(--red);text-align:center;padding:5px;background:rgba(239,68,68,.08);border-radius:6px;font-size:11px;font-weight:600;margin-top:8px}
+.ch-spc{font-size:11px;padding:4px 10px 5px;margin:0 16px 8px;border-radius:6px;background:rgba(245,158,11,.12);color:#92400e}
+.ctrl-box{border-top:1px solid var(--g100);padding:10px 0 0;margin-top:6px}
+.ctrl-title{font-size:10px;font-weight:600;color:var(--g500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.ctrl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:12px}
+.ctrl-row label{color:var(--g500);min-width:36px}
+.ctrl-row input{width:80px;padding:3px 6px;border:1px solid var(--g300);border-radius:5px;font-size:12px;text-align:right;background:#fff}
+.ctrl-row input:focus{outline:none;border-color:#3b82f6}
+.ctrl-btns{display:flex;gap:6px;margin-top:8px}
+.btn-save{background:#3b82f6;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer}
+.btn-save:hover{background:#2563eb}
+.btn-reset{background:var(--g100);color:var(--g600);border:1px solid var(--g300);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.btn-reset:hover{background:var(--g200)}
+.ctrl-saved{font-size:10px;color:#16a34a;margin-top:4px;display:none}
+.spc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px}
+.spc-card{border:1px solid var(--g200);border-radius:10px;padding:14px}
+.spc-card-title{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.spc-badge{background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:20px}
+.spc-rule-item{font-size:11px;color:#92400e;background:rgba(245,158,11,.1);border-radius:4px;padding:3px 7px;margin:2px 0;display:block}
+.files-row{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;padding:12px 20px;border-top:1px solid var(--g100)}
+.file-chip{background:var(--g100);border:1px solid var(--g200);border-radius:20px;padding:2px 10px;color:var(--g600)}
+.tbl-wrap{overflow-x:auto;padding:0 20px 20px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--g50);padding:7px 10px;text-align:left;font-weight:600;color:var(--g700);border-bottom:2px solid var(--g200);white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid var(--g100)}
+tr:hover td{background:var(--g50)}
+.oos{color:var(--red);font-weight:700}
+@media(max-width:800px){.kpi-row{grid-template-columns:repeat(2,1fr)}.meas-body{grid-template-columns:1fr}.spc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="spin"></div>
+  <div class="ld-title">⚡ 靜態電流監控</div>
+  <div class="ld-sub" id="ldSub">連接伺服器中…</div>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <a class="back-btn" href="/index.html">← 返回首頁</a>
+    <div class="topbar-title">⚡ VOW 靜態電流監控 — ICE &amp; FHEV</div>
+    <div class="topbar-badge" id="topBadge">載入中…</div>
+  </div>
+  <div class="content">
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <div>
+      <div class="pt-header">
+        <span class="pt-badge pt-ice">ICE</span>
+        <span class="pt-title">ICE 靜態電流</span>
+      </div>
+      <div class="sec" id="secICE"><div class="sec-divider sec-ice"></div></div>
+    </div>
+
+    <div>
+      <div class="pt-header">
+        <span class="pt-badge pt-fhev">FHEV</span>
+        <span class="pt-title">FHEV 靜態電流</span>
+      </div>
+      <div class="sec" id="secFHEV"><div class="sec-divider sec-fhev"></div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd" style="padding-bottom:4px">
+        <div><div class="sec-title">📊 SPC 八大特徵分析</div><div class="sec-sub">依 Nelson/Western Electric rules 檢測製程異常模式</div></div>
+      </div>
+      <div class="spc-grid" id="spcGrid"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-hd" style="padding-bottom:12px;cursor:pointer;user-select:none" onclick="toggleData()">
+        <div class="sec-title">📋 原始數據明細</div>
+        <span id="dataToggleIcon" style="font-size:13px;color:#64748b">▶ 展開</span>
+      </div>
+      <div id="dataCollapse" style="display:none">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>動力</th><th>VIN</th><th>日期</th><th>Build Phase</th><th>量測值 (mA)</th><th>USL</th><th>狀態</th></tr></thead>
+            <tbody id="dataBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="files-row" id="filesRow"></div>
+  </div>
+</div>
+
+<script>
+const SC_SPECS = {
+  ICE:  {'ICE Static Current (mA)': {usl:18.0,lsl:null,nom:null,unit:'mA',label:'ICE 靜態電流'}},
+  FHEV: {'FHEV Static Current (mA)':{usl:14.8,lsl:null,nom:null,unit:'mA',label:'FHEV 靜態電流'}}
+};
+const SPC_LABELS=['','單點極端值','連續偏移','持續趨勢','週期跳動','逼近界限 2/3','逼近界限 4/5','過度集中','兩極化'];
+
+let _data = {ICE:{stats:{},trends:{},ctrl:{}}, FHEV:{stats:{},trends:{},ctrl:{}}};
+let _files = {ICE:[], FHEV:[]};
+
+function detectSPC(vals,mean,sigma){
+  if(mean==null||!sigma||sigma<=0||!vals?.length) return{rules:[],warnIdx:new Set(),ruleSpans:[]};
+  const pts=[];
+  for(let i=0;i<vals.length;i++) if(vals[i]!=null) pts.push({i,z:(vals[i]-mean)/sigma,v:vals[i]});
+  const m=pts.length; if(m<2) return{rules:[],warnIdx:new Set(),ruleSpans:[]};
+  const triggered=[]; const wi=new Set(); const ruleSpans=[];
+  function mark(r,a,b){triggered.push(r);for(let k=a;k<=b;k++)wi.add(pts[k].i);ruleSpans.push({rn:r,x0:pts[a].i,x1:pts[b].i});}
+  let r1=false; pts.forEach(p=>{if(Math.abs(p.z)>3){r1=true;wi.add(p.i);}});
+  if(r1) triggered.push(1);
+  for(let i=0;i<=m-9;i++){const s=pts.slice(i,i+9);if(s.every(p=>p.z>0)||s.every(p=>p.z<0)){mark(2,i,i+8);break;}}
+  for(let i=0;i<=m-6;i++){const s=pts.slice(i,i+6);let u=true,d=true;for(let j=1;j<6;j++){if(s[j].v<=s[j-1].v)u=false;if(s[j].v>=s[j-1].v)d=false;}if(u||d){mark(3,i,i+5);break;}}
+  for(let i=0;i<=m-14;i++){const s=pts.slice(i,i+14);let a=true;for(let j=2;j<14;j++){const d1=s[j-1].v-s[j-2].v,d2=s[j].v-s[j-1].v;if(!d1||!d2||Math.sign(d1)===Math.sign(d2)){a=false;break;}}if(a){mark(4,i,i+13);break;}}
+  for(let i=0;i<=m-3;i++){const s=pts.slice(i,i+3);if(s.filter(p=>p.z>2).length>=2||s.filter(p=>p.z<-2).length>=2){mark(5,i,i+2);break;}}
+  for(let i=0;i<=m-5;i++){const s=pts.slice(i,i+5);if(s.filter(p=>p.z>1).length>=4||s.filter(p=>p.z<-1).length>=4){mark(6,i,i+4);break;}}
+  for(let i=0;i<=m-15;i++){if(pts.slice(i,i+15).every(p=>Math.abs(p.z)<1)){mark(7,i,i+14);break;}}
+  for(let i=0;i<=m-8;i++){const s=pts.slice(i,i+8);if(s.every(p=>Math.abs(p.z)>=1)&&s.some(p=>p.z>0)&&s.some(p=>p.z<0)){mark(8,i,i+7);break;}}
+  return{rules:[...new Set(triggered)].sort((a,b)=>a-b),warnIdx:wi,ruleSpans};
+}
+
+function computeCap(pt){
+  const col=Object.keys(SC_SPECS[pt])[0];
+  const sp=SC_SPECS[pt][col];
+  const s=_data[pt].stats[col]||{};
+  if(!s.n||s.n<2||!s.std||s.std===0) return{...s,...sp,col,ppk:null,ppu:null};
+  const ppu=(sp.usl-s.mean)/(3*s.std);
+  return{...s,...sp,col,ppk:ppu,ppu};
+}
+
+const fmt=(v,d=3)=>v==null?'—':(+v).toFixed(d);
+function ppkCls(v){return v==null?'':v>=1.33?'c-good':v>=1.0?'c-warn':'c-bad';}
+function statusDiv(ppk){
+  if(ppk==null) return '';
+  if(ppk>=1.33) return '<div class="s-g">✅ Ppk 良好 (≥ 1.33)</div>';
+  if(ppk>=1.0)  return '<div class="s-a">⚠ Ppk 偏低，建議改善</div>';
+  return '<div class="s-r">❌ Ppk 不足 (&lt; 1.0)</div>';
+}
+
+function getCtrl(pt){
+  const col=Object.keys(SC_SPECS[pt])[0];
+  if(_data[pt].ctrl[col]) return _data[pt].ctrl[col];
+  const s=_data[pt].stats[col]||{};
+  if(s.mean!=null&&s.std>0) return{ucl:+(s.mean+3*s.std).toFixed(4),lcl:null};
+  return{ucl:null,lcl:null};
+}
+
+function colId(col){return col.replace(/\W/g,'_');}
+
+async function saveCtrl(pt){
+  const col=Object.keys(SC_SPECS[pt])[0];
+  const cid=colId(col);
+  const ucl=parseFloat(document.getElementById('ucl_'+cid).value);
+  const lclEl=document.getElementById('lcl_'+cid);
+  const lcl=lclEl?parseFloat(lclEl.value):NaN;
+  if(isNaN(ucl)){alert('請輸入有效的 UCL');return;}
+  const apiPt=pt.toLowerCase();
+  await fetch(`/api/sc/${apiPt}/settings`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({col,ucl,lcl:isNaN(lcl)?null:lcl})});
+  _data[pt].ctrl[col]={ucl,lcl:isNaN(lcl)?null:lcl};
+  const saved=document.getElementById('saved_'+cid);
+  if(saved){saved.style.display='block';setTimeout(()=>saved.style.display='none',2000);}
+  renderMeasSection(pt,'sec'+pt);
+}
+
+function resetCtrl(pt){
+  const col=Object.keys(SC_SPECS[pt])[0];
+  const s=_data[pt].stats[col]||{};
+  if(!s.mean||!s.std) return;
+  const cid=colId(col);
+  document.getElementById('ucl_'+cid).value=(s.mean+3*s.std).toFixed(4);
+}
+
+function renderMeasSection(pt,containerId){
+  const r=computeCap(pt);
+  const sp=SC_SPECS[pt][r.col];
+  const data=(_data[pt].trends[r.col]||[]);
+  const vals=data.map(d=>d.val);
+  const xIdx=data.map((_,i)=>i);
+  const xTicks=data.map(d=>d.serial_no||d.date||'');
+  const ctrl=getCtrl(pt);
+  const spc=r.mean!=null&&r.std>0?detectSPC(vals,r.mean,r.std):{rules:[],warnIdx:new Set(),ruleSpans:[]};
+  const ptColor=pt==='ICE'?'#1d4ed8':'#15803d';
+  const ptColorLight=pt==='ICE'?'#3b82f6':'#22c55e';
+  const ptColorAlpha=pt==='ICE'?'rgba(29,78,216,.11)':'rgba(21,128,61,.11)';
+  const ptColorAlphaWarn='rgba(245,158,11,.11)';
+  const ptColors=vals.map((v,i)=>v==null?'#94a3b8':v>sp.usl?'#dc2626':spc.warnIdx.has(i)?'#f59e0b':ptColorLight);
+  const oos=data.filter(d=>d.val!=null&&d.val>sp.usl).length;
+  const chartId='ch_'+colId(r.col);
+  const cid=colId(r.col);
+  const yMax=Math.max(sp.usl*1.12, r.mean!=null?r.mean+4*(r.std||1):sp.usl*1.1);
+
+  const divider=`<div class="sec-divider sec-${pt.toLowerCase()}"></div>`;
+  document.getElementById(containerId).innerHTML=divider+`
+    <div class="sec-hd">
+      <div><div class="sec-title">${sp.label}</div><div class="sec-sub">${r.col} · 規格單位：${sp.unit} · USL ${sp.usl} mA</div></div>
+    </div>
+    <div class="spec-row">
+      <span class="spec-item"><span class="spec-lbl">USL</span><span class="spec-val" style="color:#dc2626">${sp.usl}</span></span>
+      <span class="spec-item"><span class="spec-lbl">LSL</span><span class="spec-val" style="color:#94a3b8">無（單邊）</span></span>
+      <span class="spec-item"><span class="spec-lbl">n</span><span class="spec-val">${r.n||0}</span></span>
+      <span class="spec-item"><span class="spec-lbl">超差</span><span class="spec-val" style="color:${oos?'#dc2626':'#16a34a'}">${oos}</span></span>
+    </div>
+    <div class="meas-body">
+      <div class="chart-area"><div id="${chartId}"></div></div>
+      <div class="stat-panel">
+        <div class="cpk-big">
+          <div class="cpk-num ${ppkCls(r.ppk)}">${r.ppk!=null?r.ppk.toFixed(3):'—'}</div>
+          <div class="cpk-lbl">Ppk (PPU)</div>
+          ${statusDiv(r.ppk)}
+        </div>
+        ${[['x̄',fmt(r.mean,4)+' mA'],['σ',fmt(r.std,4)],
+           ['PPU',r.ppu!=null?`<span style="color:${r.ppu<1.33?'#d97706':'#16a34a'};font-weight:700">${r.ppu.toFixed(3)}</span>`:'—'],
+           ['Min',fmt(r.min,3)],['Max',fmt(r.max,3)]
+          ].map(([l,v])=>`<div class="sr"><span class="sr-l">${l}</span><span class="sr-v">${v}</span></div>`).join('')}
+        <div class="ctrl-box">
+          <div class="ctrl-title">管制設定</div>
+          <div class="ctrl-row"><label>UCL</label><input type="number" id="ucl_${cid}" step="0.001" value="${ctrl.ucl!=null?ctrl.ucl:''}"></div>
+          <div class="ctrl-row"><label>LCL</label><input type="number" id="lcl_${cid}" step="0.001" placeholder="（可選）" value="${ctrl.lcl!=null?ctrl.lcl:''}"></div>
+          <div class="ctrl-btns">
+            <button class="btn-save" onclick="saveCtrl('${pt}')">儲存</button>
+            <button class="btn-reset" onclick="resetCtrl('${pt}')">±3σ</button>
+          </div>
+          <div class="ctrl-saved" id="saved_${cid}">✓ 已儲存</div>
+        </div>
+      </div>
+    </div>
+    ${spc.rules.length?`<div class="ch-spc">⚠ SPC 違規：${spc.rules.map(rn=>`R${rn} ${SPC_LABELS[rn]}`).join(' ｜ ')}</div>`:''}`;
+
+  Plotly.newPlot(chartId,[{
+    x:xIdx,y:vals,type:'scatter',mode:'lines+markers',
+    text:data.map(d=>(d.serial_no||'')+'<br>'+(d.date||'')+(d.build_phase?' ['+d.build_phase+']':'')),
+    hovertemplate:'%{text}<br><b>%{y:.3f} mA</b><extra></extra>',
+    marker:{color:ptColors,size:7,line:{width:1.5,color:'white'}},
+    line:{color:ptColorLight,width:1.5}
+  }],{
+    shapes:[
+      ...(spc.ruleSpans||[]).map(({rn,x0,x1})=>({
+        type:'rect',xref:'x',yref:'paper',x0:x0-.5,x1:x1+.5,y0:0,y1:1,
+        fillcolor:ptColorAlphaWarn,line:{width:0}
+      })),
+      {type:'line',xref:'paper',x0:0,x1:1,y0:sp.usl,y1:sp.usl,line:{color:'#dc2626',dash:'dash',width:1.5}},
+      ...(r.mean!=null?[{type:'line',xref:'paper',x0:0,x1:1,y0:r.mean,y1:r.mean,line:{color:ptColor,width:1.5}}]:[]),
+      ...(ctrl.ucl!=null?[{type:'line',xref:'paper',x0:0,x1:1,y0:ctrl.ucl,y1:ctrl.ucl,line:{color:'#d97706',width:1.5}}]:[]),
+      ...(ctrl.lcl!=null?[{type:'line',xref:'paper',x0:0,x1:1,y0:ctrl.lcl,y1:ctrl.lcl,line:{color:'#d97706',width:1.5}}]:[])
+    ],
+    annotations:[
+      {xref:'paper',x:1.01,y:sp.usl,text:'USL',showarrow:false,font:{size:9,color:'#dc2626'},xanchor:'left'},
+      ...(r.mean!=null?[{xref:'paper',x:1.01,y:r.mean,text:'x̄',showarrow:false,font:{size:9,color:ptColor},xanchor:'left'}]:[]),
+      ...(ctrl.ucl!=null?[{xref:'paper',x:1.01,y:ctrl.ucl,text:'UCL',showarrow:false,font:{size:9,color:'#d97706'},xanchor:'left'}]:[]),
+      ...(ctrl.lcl!=null?[{xref:'paper',x:1.01,y:ctrl.lcl,text:'LCL',showarrow:false,font:{size:9,color:'#d97706'},xanchor:'left'}]:[]),
+      ...(spc.ruleSpans||[]).map(({rn,x0,x1})=>({
+        xref:'x',yref:'paper',x:(x0+x1)/2,y:.99,xanchor:'center',yanchor:'top',
+        text:`<b>R${rn}</b>`,showarrow:false,
+        font:{size:9,color:'#92400e'},bgcolor:'rgba(255,251,235,.88)',bordercolor:'#d97706',borderwidth:1,borderpad:2
+      }))
+    ],
+    xaxis:{tickmode:'array',tickvals:xIdx,ticktext:xTicks,tickangle:-30,tickfont:{size:9}},
+    yaxis:{title:'mA',titlefont:{size:10},tickfont:{size:9},range:[0,yMax]},
+    height:280,margin:{t:8,b:54,l:52,r:60},
+    plot_bgcolor:'#f8fafc',paper_bgcolor:'#fff',showlegend:false
+  },{responsive:true,displayModeBar:'hover'});
+}
+
+function renderSPCGrid(){
+  document.getElementById('spcGrid').innerHTML=['ICE','FHEV'].map(pt=>{
+    const col=Object.keys(SC_SPECS[pt])[0];
+    const sp=SC_SPECS[pt][col];
+    const s=_data[pt].stats[col]||{};
+    const data=(_data[pt].trends[col]||[]);
+    const spc=s.mean!=null&&s.std>0?detectSPC(data.map(d=>d.val),s.mean,s.std):{rules:[],warnIdx:new Set(),ruleSpans:[]};
+    const ptBadge=pt==='ICE'?'background:#1d4ed8':'background:#15803d';
+    return `<div class="spc-card" style="${spc.rules.length?'border-color:rgba(245,158,11,.5)':''}">
+      <div class="spc-card-title">
+        <span class="pt-badge" style="${ptBadge}">${pt}</span>
+        ${spc.rules.length?`<span class="spc-badge">⚠ ${spc.rules.length}</span>`:'<span style="color:#16a34a;font-size:14px">✓</span>'}
+        ${sp.label}
+      </div>
+      ${spc.rules.length
+        ?spc.rules.map(rn=>`<div class="spc-rule-item">R${rn}：${SPC_LABELS[rn]}</div>`).join('')
+        :`<div style="color:#16a34a;font-size:12px">無違規特徵，製程穩定</div>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function toggleData(){
+  const el=document.getElementById('dataCollapse');
+  const icon=document.getElementById('dataToggleIcon');
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  icon.textContent=open?'▼ 收合':'▶ 展開';
+}
+
+function renderDataTable(){
+  const rows=[];
+  for(const pt of ['ICE','FHEV']){
+    const col=Object.keys(SC_SPECS[pt])[0];
+    const sp=SC_SPECS[pt][col];
+    (_data[pt].trends[col]||[]).forEach(d=>{
+      rows.push({pt,vin:d.serial_no,dt:d.date,bp:d.build_phase,val:d.val,usl:sp.usl});
+    });
+  }
+  rows.sort((a,b)=>a.dt<b.dt?-1:a.dt>b.dt?1:0);
+  document.getElementById('dataBody').innerHTML=rows.map((r,i)=>{
+    const oos=r.val!=null&&r.val>r.usl;
+    const ptStyle=r.pt==='ICE'?'color:#1d4ed8;font-weight:700':'color:#15803d;font-weight:700';
+    return `<tr>
+      <td>${i+1}</td>
+      <td><span style="${ptStyle}">${r.pt}</span></td>
+      <td style="font-size:10px">${r.vin||''}</td>
+      <td>${r.dt||''}</td>
+      <td>${r.bp||''}</td>
+      <td class="${oos?'oos':''}">${r.val!=null?r.val.toFixed(3):'—'}</td>
+      <td>${r.usl}</td>
+      <td>${oos?'<span style="color:#dc2626">超差</span>':'<span style="color:#16a34a">✓ 合格</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+(async function boot(){
+  try{
+    document.getElementById('ldSub').textContent='讀取靜態電流數據…';
+    const [iceStats,fhevStats,iceTrends,fhevTrends,iceCtrl,fhevCtrl]=await Promise.all([
+      fetch('/api/sc/ice/stats'),
+      fetch('/api/sc/fhev/stats'),
+      fetch('/api/sc/ice/trends/all').catch(()=>null),
+      fetch('/api/sc/fhev/trends/all').catch(()=>null),
+      fetch('/api/sc/ice/settings').catch(()=>null),
+      fetch('/api/sc/fhev/settings').catch(()=>null)
+    ]);
+    if(!iceStats.ok||!fhevStats.ok) throw new Error('伺服器回應異常');
+
+    const iceS=await iceStats.json();
+    const fhevS=await fhevStats.json();
+    iceS.stats.forEach(s=>_data.ICE.stats[s.col]=s);
+    fhevS.stats.forEach(s=>_data.FHEV.stats[s.col]=s);
+    _data.ICE.trends  = iceTrends&&iceTrends.ok?await iceTrends.json():{};
+    _data.FHEV.trends = fhevTrends&&fhevTrends.ok?await fhevTrends.json():{};
+    if(iceCtrl&&iceCtrl.ok)   _data.ICE.ctrl  = await iceCtrl.json();
+    if(fhevCtrl&&fhevCtrl.ok) _data.FHEV.ctrl = await fhevCtrl.json();
+    _files.ICE=iceS.files; _files.FHEV=fhevS.files;
+
+    const capI=computeCap('ICE'), capF=computeCap('FHEV');
+    const nI=capI.n||0, nF=capF.n||0;
+    const oosI=(_data.ICE.trends['ICE Static Current (mA)']||[]).filter(d=>d.val>18).length;
+    const oosF=(_data.FHEV.trends['FHEV Static Current (mA)']||[]).filter(d=>d.val>14.8).length;
+
+    document.getElementById('kpiRow').innerHTML=[
+      {lbl:'ICE 量測筆數',val:nI,cls:''},
+      {lbl:'ICE Ppk',val:capI.ppk!=null?capI.ppk.toFixed(3):'—',cls:ppkCls(capI.ppk)},
+      {lbl:'FHEV 量測筆數',val:nF,cls:''},
+      {lbl:'FHEV Ppk',val:capF.ppk!=null?capF.ppk.toFixed(3):'—',cls:ppkCls(capF.ppk)}
+    ].map(k=>`<div class="kpi ${k.cls}"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div></div>`).join('');
+
+    document.getElementById('topBadge').textContent=
+      `ICE ${_files.ICE.length} CSV · FHEV ${_files.FHEV.length} CSV`;
+    document.getElementById('filesRow').innerHTML=
+      [..._files.ICE,..._files.FHEV].map(f=>`<span class="file-chip">${f}</span>`).join('');
+
+    renderMeasSection('ICE','secICE');
+    renderMeasSection('FHEV','secFHEV');
+    renderSPCGrid();
+    renderDataTable();
+
+    document.getElementById('loading').style.display='none';
+    document.getElementById('app').style.display='block';
+  }catch(e){
+    document.getElementById('ldSub').textContent='載入失敗：'+e.message;
+  }
+})();
+</script>
+</body>
+</html>

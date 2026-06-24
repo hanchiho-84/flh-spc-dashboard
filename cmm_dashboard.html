@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIW CMM 車身量測分析</title>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.26.0/plotly.min.js"></script>
+<style>
+:root{--blue:#2563eb;--blue-lt:#eff6ff;--green:#16a34a;--green-lt:#f0fdf4;--amber:#d97706;--amber-lt:#fffbeb;--red:#dc2626;--red-lt:#fef2f2;--g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;--g400:#94a3b8;--g500:#64748b;--g700:#334155;--g900:#0f172a;--sw:272px;--hh:58px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--g50);color:var(--g900);font-size:14px;line-height:1.5}
+
+#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(150deg,#1e3a8a,#2563eb 60%,#60a5fa);color:#fff;z-index:999}
+.spin{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:20px}
+.spin-sm{width:20px;height:20px;border:2px solid var(--g300);border-top-color:var(--g500);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.ld-sub{font-size:14px;opacity:.75}
+
+#errorBox{display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:var(--g50)}
+.err-card{background:#fff;border:1px solid var(--g200);border-radius:16px;padding:40px;max-width:460px;text-align:center}
+.err-ico{font-size:48px;margin-bottom:16px}
+.err-title{font-size:18px;font-weight:700;color:var(--red);margin-bottom:10px}
+.err-body{font-size:13px;color:var(--g500);line-height:1.7}
+.err-code{background:var(--g100);border-radius:8px;padding:10px 14px;font-family:monospace;font-size:12px;margin-top:14px;text-align:left}
+
+#app{display:none}
+.app-header{height:var(--hh);background:#fff;border-bottom:1px solid var(--g200);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:200;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.h-logo{font-size:22px}.h-title{font-size:15px;font-weight:700}
+.h-sub{font-size:12px;color:var(--g500);margin-left:2px}
+.h-right{display:flex;gap:8px;align-items:center;margin-left:auto}
+.badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-b{background:var(--blue-lt);color:var(--blue)}
+.badge-g{background:var(--g100);color:var(--g700)}
+.badge-a{background:var(--amber-lt);color:var(--amber)}
+.btn-sm{padding:6px 13px;border:1px solid var(--g300);border-radius:8px;background:#fff;cursor:pointer;font-size:12px;color:var(--g700)}
+.btn-sm:hover{background:var(--g50)}
+.back-btn{color:var(--blue);font-size:13px;font-weight:500;text-decoration:none;padding:5px 12px;border:1px solid var(--blue);border-radius:6px;transition:all .15s;white-space:nowrap}
+.back-btn:hover{background:var(--blue);color:#fff}
+
+.app-body{display:flex;height:calc(100vh - var(--hh))}
+.sidebar{width:var(--sw);background:#fff;border-right:1px solid var(--g200);overflow-y:auto;padding:16px 14px;flex-shrink:0}
+.sb-sec{margin-bottom:22px}
+.sb-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g500);margin-bottom:9px;display:block}
+.sb-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.sb-rl{font-size:12px;color:var(--g500);width:36px;flex-shrink:0}
+.sb-input{flex:1;padding:7px 10px;border:1px solid var(--g300);border-radius:7px;font-size:13px}
+.sb-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--g300);background:#fff;cursor:pointer;transition:all .15s;color:var(--g700)}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.q-card{background:var(--g50);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:box-shadow .15s,transform .1s;user-select:none}
+.q-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.1);transform:translateY(-1px)}
+.q-val{font-size:21px;font-weight:700}.q-lbl{font-size:10px;color:var(--g500);margin-top:1px}
+.q-green .q-val{color:var(--green)}.q-amber .q-val{color:var(--amber)}
+.q-red .q-val{color:var(--red)}.q-blue .q-val{color:var(--blue)}
+.q-green.active{box-shadow:0 0 0 2.5px var(--green)}
+.q-amber.active{box-shadow:0 0 0 2.5px var(--amber)}
+.q-red.active{box-shadow:0 0 0 2.5px var(--red)}
+.q-blue.active{box-shadow:0 0 0 2.5px var(--blue)}
+.filter-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;margin-left:10px;vertical-align:middle}
+.filter-badge-g{background:var(--green-lt);color:#15803d}
+.filter-badge-a{background:var(--amber-lt);color:#92400e}
+.filter-badge-r{background:var(--red-lt);color:#991b1b}
+.filter-badge-b{background:var(--blue-lt);color:var(--blue)}
+.filter-badge button{border:none;background:none;cursor:pointer;font-size:13px;line-height:1;padding:0;color:inherit;opacity:.7}
+.filter-badge button:hover{opacity:1}
+.file-list{list-style:none}
+.file-list li{font-size:12px;color:var(--g500);padding:3px 0;display:flex;align-items:center;gap:6px}
+.file-list li::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%;flex-shrink:0}
+.cl-list{display:flex;flex-direction:column;gap:6px}
+.cl-item{font-size:11px;line-height:1.5;border-left:2px solid var(--g200);padding-left:8px}
+.cl-date{display:block;color:var(--g400);font-size:10px;margin-bottom:1px}
+.cl-desc{color:var(--g700)}
+
+.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--g200);background:#fff;padding:0 18px;position:sticky;top:0;z-index:100}
+.tab{padding:13px 18px;font-size:13.5px;font-weight:500;color:var(--g500);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--g900)}
+.tab.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+.tab-warn{color:var(--amber)}.tab-warn.on{color:var(--amber);border-bottom-color:var(--amber)}
+.tab-issues{color:var(--red)}.tab-issues.on{color:var(--red);border-bottom-color:var(--red)}
+.panel{display:none;padding:18px 20px}.panel.on{display:block}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--g200);border-radius:12px;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--g50);padding:10px 13px;text-align:left;font-weight:600;color:var(--g700);border-bottom:1px solid var(--g200);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{background:var(--g100)}
+td{padding:8px 13px;border-bottom:1px solid var(--g100);white-space:nowrap}
+tr:last-child td{border:none}
+tr:hover td{background:var(--g50)}
+.cpk{font-weight:700;padding:3px 9px;border-radius:6px;display:inline-block;min-width:52px;text-align:center;font-size:12px}
+.cg{background:var(--green-lt);color:#15803d}.ca{background:var(--amber-lt);color:#92400e}
+.cr{background:var(--red-lt);color:#991b1b}.cn{background:var(--g100);color:var(--g500)}
+.spec-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;display:inline-block}
+.spec-pdf{background:var(--green-lt);color:#15803d}.spec-global{background:var(--g100);color:var(--g500)}.spec-control{background:#fef9c3;color:#854d0e}
+.risk-card{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:16px;margin-top:14px}
+.risk-card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:12px}
+.risk-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.risk-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1.5px solid var(--g200);cursor:pointer;background:var(--g50);transition:background .1s,border-color .1s}
+.risk-opt.selected-low{background:var(--amber-lt);border-color:#fcd34d}
+.risk-opt.selected-high{background:var(--red-lt);border-color:#fca5a5}
+.risk-opt input[type=radio]{margin-top:2px;flex-shrink:0;cursor:pointer}
+.risk-opt-label{font-size:13px;font-weight:600;color:var(--g900)}
+.risk-opt-desc{font-size:11px;color:var(--g500);margin-top:2px}
+.risk-extra{padding:12px;border-radius:8px;background:var(--g50);border:1px solid var(--g200);margin-top:8px}
+.risk-extra>label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);display:block;margin-bottom:8px}
+.risk-input{padding:7px 10px;border:1px solid var(--g300);border-radius:7px;font-size:13px;width:100px}
+.risk-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+.risk-textarea{width:100%;padding:8px 10px;border:1px solid var(--g300);border-radius:7px;font-size:13px;min-height:80px;resize:vertical;font-family:inherit}
+.risk-textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+.risk-save-row{display:flex;align-items:center;gap:10px;margin-top:12px}
+.btn-risk-save{padding:7px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-risk-save:hover{background:#1d4ed8}
+.risk-save-status{font-size:12px;color:var(--green)}
+.audit-log-section{border-top:1px solid var(--g200);padding-top:12px;margin-top:12px}
+.audit-log-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:8px}
+.audit-entry{font-size:11px;padding:5px 8px;border-radius:6px;background:var(--g50);margin-bottom:4px;line-height:1.5}
+.audit-time{color:var(--g400);font-size:10px;display:block}
+.audit-change{color:var(--g700)}
+.risk-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.risk-dot-none{background:var(--g300)}.risk-dot-low{background:#eab308}.risk-dot-high{background:#dc2626}
+.issue-card{background:#fff;border:1px solid #fca5a5;border-radius:12px;padding:16px;margin-bottom:12px}
+.issue-card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.issue-col{font-size:15px;font-weight:700;color:var(--red)}
+.issue-desc-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin:8px 0 4px}
+.issue-desc{font-size:13px;color:var(--g700);background:var(--red-lt);padding:8px 12px;border-radius:8px;border:1px solid #fca5a5;line-height:1.6}
+
+.tc-bar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.tc-search{padding:7px 11px;border:1px solid var(--g300);border-radius:8px;font-size:13px;width:180px}
+.tc-search:focus{outline:none;border-color:var(--blue)}
+.trend-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.ch-card{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:10px 12px;overflow:hidden}
+.ch-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.ch-spc{font-size:11px;padding:3px 6px 4px;margin-top:4px;border-radius:6px;background:rgba(245,158,11,.12);color:#92400e;display:flex;flex-wrap:wrap;gap:4px;line-height:1.6}
+.spc-rule-card{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.spc-rule-hd{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.spc-rule-badge{background:#f59e0b;color:#fff;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.spc-col-chip{display:inline-block;background:rgba(245,158,11,.13);color:#92400e;border:1px solid rgba(245,158,11,.35);font-size:11px;padding:2px 8px;border-radius:20px;margin:2px;cursor:pointer}
+.spc-col-chip:hover{background:rgba(245,158,11,.28)}
+.spc-none{color:var(--g400);font-size:12px;font-style:italic;padding:2px 0}
+.ch-name{font-size:12.5px;font-weight:600;color:var(--g700)}
+.ch-cpk{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
+.ch-placeholder{height:200px;display:flex;align-items:center;justify-content:center;color:var(--g400);gap:8px;font-size:12px}
+
+.det-layout{display:grid;grid-template-columns:1fr 265px;gap:16px}
+.det-select{padding:9px 13px;border:1px solid var(--g300);border-radius:10px;font-size:14px;width:100%;margin-bottom:14px;background:#fff}
+.det-select:focus{outline:none;border-color:var(--blue)}
+.stat-panel{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:14px}
+.stat-panel h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:12px}
+.sr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--g100);font-size:13px}
+.sr:last-child{border:none}
+.sr-l{color:var(--g500)}.sr-v{font-weight:600}
+.status{margin-top:12px;padding:11px;border-radius:10px;text-align:center;font-weight:600;font-size:14px}
+.s-g{background:var(--green-lt);color:#15803d}.s-a{background:var(--amber-lt);color:#92400e}
+.s-b{background:var(--red-lt);color:#991b1b}.s-n{background:var(--g100);color:var(--g500)}
+.sec-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.sec-sub{font-size:12px;color:var(--g500);margin-bottom:14px}
+
+.alert{border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8}
+.alert-warn{background:var(--amber-lt);border:1px solid #fcd34d;color:#78350f}
+.alert-info{background:var(--blue-lt);border:1px solid #bfdbfe;color:#1e3a8a}
+.alert b{font-weight:700}
+.alert code{background:rgba(0,0,0,.09);padding:1px 5px;border-radius:4px;font-size:12px;font-family:monospace}
+.alert-title{font-size:14px;font-weight:700;margin-bottom:6px}
+
+@media(max-width:900px){.trend-grid{grid-template-columns:1fr}.det-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spin"></div>
+  <div class="ld-title">🚗 BIW CMM 車身量測分析</div>
+  <div class="ld-sub" id="ldSub">連接伺服器中…</div>
+</div>
+
+<div id="errorBox" style="display:none;position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--g50)">
+  <div class="err-card">
+    <div class="err-ico">⚠️</div>
+    <div class="err-title">無法連接到資料伺服器</div>
+    <div class="err-body">請先執行 <b>啟動分析.bat</b> 啟動本地伺服器，再重新整理此頁面。</div>
+    <div class="err-code">雙擊 → 啟動分析.bat<br>然後重新整理瀏覽器 (F5)</div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="app-header">
+    <a class="back-btn" href="/index.html">← 返回首頁</a>
+    <div class="h-logo">🚗</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="h-title">BIW 車身數據</span>
+      <div style="display:flex;gap:4px">
+        <button id="btnModeMF" class="btn-sm" style="background:var(--blue);color:#fff;border-color:var(--blue)" onclick="switchMode('mf')">Margin Flush</button>
+        <button id="btnModeSG" class="btn-sm" onclick="switchMode('sg')">Seal Gap</button>
+        <div style="position:relative">
+          <button id="btnModeCMM" class="btn-sm" onclick="toggleCmmMenu(event)">CMM ▾</button>
+          <div id="cmmMenu" style="display:none;position:absolute;left:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--g200);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:300;min-width:130px">
+            <button class="btn-sm" style="display:block;width:100%;text-align:left;border:none;border-radius:0;padding:8px 14px" onclick="switchMode('cmm_6x')">6X 總組線</button>
+            <button class="btn-sm" style="display:block;width:100%;text-align:left;border:none;border-radius:0;padding:8px 14px" onclick="switchMode('cmm_7x')">7X 邊鈑線</button>
+            <button class="btn-sm" style="display:block;width:100%;text-align:left;border:none;border-radius:0;padding:8px 14px;border-radius:0 0 8px 8px" onclick="switchMode('cmm_8x')">8X 底盤線</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="h-right">
+      <span class="badge badge-b" id="hBadgeRows">—</span>
+      <span class="badge badge-g" id="hBadgeCols">—</span>
+      <span class="badge badge-a" id="hBadgeSpec" style="display:none">—</span>
+      <div style="position:relative">
+        <button class="btn-sm" id="clBtn" onclick="toggleChangelog(event)">📋 變更紀錄</button>
+        <div id="clDrop" style="display:none;position:absolute;right:0;top:calc(100% + 6px);width:360px;background:#fff;border:1px solid var(--g200);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:500;max-height:420px;overflow-y:auto;padding:14px 16px">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:10px">變更紀錄</div>
+          <div class="cl-list">
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">新增 CMM 模式（6X 總組線 / 7X 邊鈑線 / 8X 底盤線）：讀取 PC-DMIS XML 檔，差值（measured−nominal）作為監控值，規格（USL/LSL）直接從 XML 提取；伺服器背景執行初始化，首次啟動完成後後續均快速載入；XML 規格來源以「XML✓」標示</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">新增 Seal Gap（SG）模式：標題列加入 Margin Flush / Seal Gap 切換按鈕，點擊即載入各自資料集（CSV 檔名含 SG 者），規格從 sg_specs.json 讀取；所有子頁籤（製程能力總覽、趨勢圖、單點分析、待澄清、統計方法）均支援 SG 模式</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">標題簡化為「BIW 車身數據」；Margin Flush / Seal Gap 切換按鈕移至標題旁（左側），右側保留筆數與點位數徽章</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">變更紀錄移至右上角下拉選單；已載入檔案改為收折式，加入綠燈載入狀態</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">新增位置篩選：左側欄依車身區域（HOOD / FRONT DOOR / REAR DOOR / FENDER / LIFTGATE）篩選製程能力總覽</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">車身位置標註：從 PDF 24 頁萃取全部 118 個量測點所屬區域，顯示於製程能力總覽欄位與單點分析趨勢圖標題</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">補齊 24 個 BM_PIST 點位規格（L/R 105-106 AMX/AFZ、112/116/117 AMX/AFY、121 AMX/AFY）；修正 11 個多欄 PDF 萃取錯誤；specs.json 現涵蓋全部 142 個量測點，待澄清清單歸零</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">單點分析新增 Pp / Ppk（長期，整體σ）與 Cp / Cpk（短期，組內σ）雙軌指標；以每日 CSV 為子組，支援可變子組大小（pooled within-group σ），n=1 批次自動排除</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">趨勢圖與總覽小圖限制為最近 30 筆資料；原始數據表改為依日期降序排列（最新在上）</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">修正日期格式解析：補齊 D-Mon（6-Jan）與 M/D（9/4）格式的年份推算，伺服器端 _norm_dt 同步更新</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">新增「統計方法」說明頁：涵蓋 σ_within / σ_overall 公式、Cp/Cpk vs Pp/Ppk 定義、SPC 八大準則、術語對照表與子組定義邏輯</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-23</span><span class="cl-desc">新增 AM（間隙）量測點：伺服器 query 由 AF（段差）擴充為 AF + AM，量測點數從 AF 專屬擴增至包含全部間隙點位</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-23</span><span class="cl-desc">整合 BIW PDF 規格：從官方 AFIT 報告自動萃取 118 個量測點的 USL / NOM / LSL，存入 specs.json</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-17</span><span class="cl-desc">新增風險評估：低風險設管制值（UCL/LCL 取代公差）、高風險設說明，含變更紀錄與「需改善」集中管理頁</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-17</span><span class="cl-desc">P0 架構升級：SQLite 快取、增量解析、趨勢圖懶載入</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-17</span><span class="cl-desc">新增 ⚠️ 待澄清 tab：說明 FS1-6X vs MF MP1 規格命名不相容</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-17</span><span class="cl-desc">規格整合：PDF 自動解析、per-point USL/LSL、/api/specs 端點</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-15</span><span class="cl-desc">初始建立：CMM Dashboard、趨勢圖、Cp/Cpk、自動讀取 CSV</span></div>
+          </div>
+        </div>
+      </div>
+      <button class="btn-sm" onclick="location.reload()">🔄 重新整理</button>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <aside class="sidebar">
+      <div class="sb-sec">
+        <span class="sb-lbl">預設公差（無規格點用）</span>
+        <div class="sb-row"><span class="sb-rl">USL</span><input class="sb-input" type="number" id="uslInput" value="1.5" step="0.1" oninput="refresh()"></div>
+        <div class="sb-row"><span class="sb-rl">LSL</span><input class="sb-input" type="number" id="lslInput" value="-1.5" step="0.1" oninput="refresh()"></div>
+      </div>
+      <div class="sb-sec">
+        <span class="sb-lbl">規格狀況</span>
+        <div class="q-grid">
+          <div class="q-card q-green"><div class="q-val" id="qSpecMatched">—</div><div class="q-lbl">有規格</div></div>
+          <div class="q-card q-amber"><div class="q-val" id="qSpecPending">—</div><div class="q-lbl">待澄清</div></div>
+        </div>
+      </div>
+      <div class="sb-sec">
+        <span class="sb-lbl">側向篩選</span>
+        <div class="chips">
+          <div class="chip on" data-side="L" onclick="toggleChip(this,'side')">L 左</div>
+          <div class="chip on" data-side="R" onclick="toggleChip(this,'side')">R 右</div>
+          <div class="chip on" data-side="C" onclick="toggleChip(this,'side')">C 中</div>
+          <div class="chip on" data-side="U" id="chipSideU" style="display:none" onclick="toggleChip(this,'side')">U</div>
+        </div>
+      </div>
+      <div class="sb-sec">
+        <span class="sb-lbl">軸向篩選</span>
+        <div class="chips">
+          <div class="chip on" data-axis="X" onclick="toggleChip(this,'axis')">X</div>
+          <div class="chip on" data-axis="Y" onclick="toggleChip(this,'axis')">Y</div>
+          <div class="chip on" data-axis="Z" onclick="toggleChip(this,'axis')">Z</div>
+        </div>
+      </div>
+      <div class="sb-sec">
+        <span class="sb-lbl">位置篩選</span>
+        <div id="areaChips" class="chips" style="max-height:180px;overflow-y:auto;gap:4px"></div>
+      </div>
+      <div class="sb-sec">
+        <span class="sb-lbl">製程能力概況</span>
+        <div class="q-grid">
+          <div class="q-card q-green" id="card-good" onclick="setCpkFilter('good')"><div class="q-val" id="qGood">—</div><div class="q-lbl">Cpk ≥ 1.33</div></div>
+          <div class="q-card q-amber" id="card-warn" onclick="setCpkFilter('warn')"><div class="q-val" id="qWarn">—</div><div class="q-lbl">1.0 ~ 1.33</div></div>
+          <div class="q-card q-red"   id="card-bad"  onclick="setCpkFilter('bad')"><div class="q-val" id="qBad">—</div><div class="q-lbl">Cpk &lt; 1.0</div></div>
+          <div class="q-card q-blue"  id="card-all"  onclick="setCpkFilter(null)"><div class="q-val" id="qTotal">—</div><div class="q-lbl">全部點位</div></div>
+        </div>
+      </div>
+      <div class="sb-sec">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;cursor:pointer;user-select:none" onclick="toggleFileList()">
+          <span class="sb-lbl" style="margin:0">已載入檔案</span>
+          <span id="fileListToggle" style="font-size:11px;color:var(--g400)">▶ 展開</span>
+        </div>
+        <div id="fileStatus" style="font-size:12px;margin-bottom:4px"></div>
+        <ul class="file-list" id="fileList" style="display:none"></ul>
+      </div>
+    </aside>
+
+    <div class="content">
+      <div class="tabs">
+        <button class="tab on" onclick="switchTab('summary',this)">📋 製程能力總覽</button>
+        <button class="tab" onclick="switchTab('trends',this)">📈 趨勢圖</button>
+        <button class="tab" id="tabSpc" onclick="switchTab('spc',this)">📊 SPC 特徵</button>
+        <button class="tab" onclick="switchTab('detail',this)">🔍 單點分析</button>
+        <button class="tab tab-warn" id="tabClarify" onclick="switchTab('clarify',this)">⚠️ 待澄清 <span id="clarifyCount"></span></button>
+        <button class="tab tab-issues" id="tabIssues" onclick="switchTab('issues',this)">🔴 需改善</button>
+        <button class="tab" onclick="switchTab('method',this)">📐 統計方法</button>
+      </div>
+
+      <div class="panel on" id="panel-summary">
+        <div class="sec-title"><span id="summaryModeTitle">MF 點位製程能力</span><span id="filterBadge"></span></div>
+        <div class="sec-sub" id="sumSub"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th onclick="sortTable(0)">點位 ↕</th>
+              <th>位置</th>
+              <th onclick="sortTable(1)">規格來源 ↕</th>
+              <th onclick="sortTable(2)">USL ↕</th>
+              <th onclick="sortTable(3)">LSL ↕</th>
+              <th onclick="sortTable(4)">n ↕</th>
+              <th onclick="sortTable(5)">平均值 ↕</th>
+              <th onclick="sortTable(6)">標準差 ↕</th>
+              <th onclick="sortTable(7)">最小值 ↕</th>
+              <th onclick="sortTable(8)">最大值 ↕</th>
+              <th onclick="sortTable(9)">Cp ↕</th>
+              <th onclick="sortTable(10)">Cpk ↕</th>
+              <th>風險</th>
+            </tr></thead>
+            <tbody id="sumBody"></tbody>
+          </table>
+        </div>
+        <div id="cpkBarDiv" style="margin-top:20px;background:#fff;border:1px solid var(--g200);border-radius:12px;padding:12px"></div>
+      </div>
+
+      <div class="panel" id="panel-trends">
+        <div class="sec-title" id="trendsModeTitle">MF 量測趨勢圖</div>
+        <div class="sec-sub">捲動畫面時自動載入各點位趨勢，超差點標紅</div>
+        <div class="tc-bar">
+          <input class="tc-search" type="text" id="tcSearch" placeholder="搜尋點位名稱…" oninput="renderTrends()">
+          <div class="chips">
+            <div class="chip on" data-a="X" onclick="toggleTrendAxis(this)">X</div>
+            <div class="chip on" data-a="Y" onclick="toggleTrendAxis(this)">Y</div>
+            <div class="chip on" data-a="Z" onclick="toggleTrendAxis(this)">Z</div>
+          </div>
+        </div>
+        <div class="trend-grid" id="trendGrid"></div>
+      </div>
+
+      <div class="panel" id="panel-spc">
+        <div class="sec-title">📊 SPC 八大特徵分析</div>
+        <div class="sec-sub">依 Nelson/Western Electric rules 檢測各點位製程異常模式，點選點位名稱跳至單點分析</div>
+        <div id="spcContent"></div>
+      </div>
+
+      <div class="panel" id="panel-detail">
+        <div class="sec-title">單點深度分析</div>
+        <select class="det-select" id="detSelect" onchange="renderDetail()">
+          <option value="">— 選擇量測點位 —</option>
+        </select>
+        <div class="det-layout">
+          <div>
+            <div id="detTrendDiv" style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:10px;margin-bottom:12px;min-height:200px"></div>
+            <div id="detHistDiv" style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:10px;min-height:120px"></div>
+          </div>
+          <div id="detStats" class="stat-panel"><h3>統計摘要</h3><p style="color:var(--g400);font-size:13px">請選擇點位</p></div>
+        </div>
+        <div id="detRisk"></div>
+      </div>
+
+      <div class="panel" id="panel-issues">
+        <div class="sec-title">🔴 需改善點位集中管理</div>
+        <div id="issuesContent"><div class="alert alert-info"><div class="alert-title">目前沒有高風險點位</div><div>在「單點分析」頁面為各點位設定風險評估，高風險點位將在此集中管理。</div></div></div>
+      </div>
+
+      <div class="panel" id="panel-clarify">
+        <div class="sec-title">⚠️ 待澄清點位</div>
+        <div id="clarifyContent"></div>
+      </div>
+
+      <div class="panel" id="panel-method">
+        <div class="sec-title">📐 統計方法說明</div>
+        <div class="sec-sub" style="margin-bottom:20px">本系統採用的統計指標定義、公式與判斷標準</div>
+        <div id="methodContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────
+let currentMode = 'mf';
+let statsData  = {};   // {col: {n,mean,std,min,max}} — from /api/stats
+let trendCache = {};   // {col: [{serial_no,date,val}]} — preloaded at boot
+let spcCache   = {};   // {col: {rules:[], warnIdx:Set}} — computed after trendCache loads
+let afCols     = [];
+let specsData  = {matched:{}, unmatched:[]};
+let fileList   = [];
+let totalBodies = 0;
+
+let settingsData = {};   // {col: {risk_level, control_usl, control_lsl, risk_description, updated_at}}
+let auditLog     = [];   // [{col, changed_at, changes}]
+
+let sideFilter     = new Set(['L','R','C']);
+let axisFilter     = new Set(['X','Y','Z']);
+let trendAxisFilter= new Set(['X','Y','Z']);
+let areaFilter     = new Set(); // populated after specs load; empty = show all
+let sortDir=1, sortCol=10, tableData=[], cpkFilter=null;
+
+// IntersectionObserver for lazy trend chart loading
+let chartObserver;
+
+// ── CMM dropdown ─────────────────────────────────────────────────
+function toggleCmmMenu(e){
+  e.stopPropagation();
+  const m=document.getElementById('cmmMenu');
+  m.style.display=m.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',()=>{
+  const m=document.getElementById('cmmMenu');
+  if(m) m.style.display='none';
+});
+
+// ── Mode switch ──────────────────────────────────────────────────
+function _modeLabel(mode){
+  if(mode==='mf') return 'MF';
+  if(mode==='sg') return 'SG';
+  if(mode==='cmm_6x') return 'CMM 6X';
+  if(mode==='cmm_7x') return 'CMM 7X';
+  if(mode==='cmm_8x') return 'CMM 8X';
+  return mode.toUpperCase();
+}
+function _modeQueryParam(mode){
+  if(mode.startsWith('cmm_')) return `mode=cmm&line=${mode.split('_')[1]}`;
+  return `mode=${mode}`;
+}
+
+async function switchMode(mode){
+  if(mode===currentMode) return;
+  currentMode=mode;
+  document.getElementById('cmmMenu').style.display='none';
+  // Button styles
+  const isMF=mode==='mf', isSG=mode==='sg', isCMM=mode.startsWith('cmm_');
+  document.getElementById('btnModeMF').style.cssText=
+    isMF?'background:var(--blue);color:#fff;border-color:var(--blue)':'';
+  document.getElementById('btnModeSG').style.cssText=
+    isSG?'background:var(--blue);color:#fff;border-color:var(--blue)':'';
+  document.getElementById('btnModeCMM').style.cssText=
+    isCMM?'background:var(--blue);color:#fff;border-color:var(--blue)':'';
+  document.getElementById('btnModeCMM').textContent=
+    isCMM?`${mode.split('_')[1].toUpperCase()} 線 ▾`:'CMM ▾';
+  // Show/hide U chip
+  document.getElementById('chipSideU').style.display=isCMM?'':'none';
+  if(isCMM){ sideFilter.add('U'); document.getElementById('chipSideU').classList.add('on'); }
+  else { sideFilter.delete('U'); }
+  // Reset data caches
+  statsData={}; trendCache={}; spcCache={}; afCols=[];
+  specsData={matched:{},unmatched:[]}; fileList=[]; totalBodies=0;
+  // Switch back to summary tab
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelector('.tab').classList.add('on');
+  document.getElementById('panel-summary').classList.add('on');
+  // Show loading overlay
+  document.getElementById('app').style.display='none';
+  document.getElementById('loading').style.display='flex';
+  await loadData(mode);
+}
+
+// ── Boot ─────────────────────────────────────────────────────────
+(async function boot(){
+  // Setup IntersectionObserver (once)
+  chartObserver=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting&&!e.target.dataset.loaded){
+        e.target.dataset.loaded='1';
+        chartObserver.unobserve(e.target);
+        loadTrendChart(e.target.dataset.col, e.target);
+      }
+    });
+  },{rootMargin:'200px'});
+
+  // Load settings once (mode-independent)
+  try{
+    const settingsRes = await fetch('/api/settings').catch(()=>null);
+    if(settingsRes&&settingsRes.ok){
+      const sd = await settingsRes.json();
+      settingsData = sd.settings||{};
+      auditLog     = sd.audit_log||[];
+    }
+  }catch(_){}
+
+  await loadData('mf');
+})();
+
+async function loadData(mode){
+  try{
+    const isCMM=mode.startsWith('cmm_');
+    const modeLabel=_modeLabel(mode);
+    document.getElementById('ldSub').textContent=`讀取 ${modeLabel} 數據…`;
+    const q=`?${_modeQueryParam(mode)}`;
+
+    // CMM: server may still be initialising; poll until ready
+    let statsJson;
+    while(true){
+      const statsRes=await fetch('/api/stats'+q);
+      if(!statsRes.ok) throw new Error('HTTP '+statsRes.status);
+      statsJson=await statsRes.json();
+      if(!statsJson.loading) break;
+      document.getElementById('ldSub').textContent=
+        `${modeLabel} 初始化中（首次載入約 1-2 分鐘）…`;
+      await new Promise(r=>setTimeout(r,4000));
+      // Bail if user switched mode while waiting
+      if(currentMode!==mode) return;
+    }
+
+    const [specsRes, trendsRes] = await Promise.all([
+      fetch('/api/specs'+q).catch(()=>null),
+      fetch('/api/trends/all'+q).catch(()=>null)
+    ]);
+
+    const {stats, files} = statsJson;
+    fileList = files||[];
+
+    stats.forEach(s=>{ statsData[s.col]=s; if(s.n>totalBodies) totalBodies=s.n; });
+    afCols = stats.map(s=>s.col).sort();
+
+    if(trendsRes&&trendsRes.ok){
+      trendCache = await trendsRes.json();
+      afCols.forEach(col=>{
+        const data=trendCache[col]; const s=statsData[col];
+        if(!data||!s||s.mean==null||!s.std||s.std<=0) return;
+        spcCache[col]=detectSPC(data.map(d=>d.val),s.mean,s.std);
+      });
+    }
+
+    // Area chips — clear and repopulate
+    const ac=document.getElementById('areaChips');
+    ac.innerHTML='';
+    if(specsRes&&specsRes.ok){
+      specsData = await specsRes.json();
+      const uniqueAreas=[...new Set(Object.values(specsData.matched||{}).map(m=>m.area).filter(Boolean))].sort();
+      areaFilter=new Set(uniqueAreas);
+      uniqueAreas.forEach(area=>{
+        const el=document.createElement('div');
+        el.className='chip on';
+        el.dataset.area=area;
+        el.textContent=area;
+        el.style.fontSize='11px';
+        el.onclick=()=>{
+          el.classList.toggle('on');
+          areaFilter.has(area)?areaFilter.delete(area):areaFilter.add(area);
+          refresh();
+        };
+        ac.appendChild(el);
+      });
+    }else{
+      areaFilter=new Set();
+    }
+
+    // Detail select — clear and repopulate
+    const sel=document.getElementById('detSelect');
+    sel.innerHTML='';
+    afCols.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+
+    // File status + list
+    const fl=document.getElementById('fileList');
+    fl.innerHTML='';
+    const n=fileList.length;
+    const ok=n>0;
+    const fileUnit=isCMM?'XML':'CSV';
+    document.getElementById('fileStatus').innerHTML=
+      `<span style="display:inline-flex;align-items:center;gap:5px;line-height:1.5">
+        <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${ok?'#16a34a':'#dc2626'}"></span>
+        <span style="color:${ok?'#15803d':'#991b1b'};font-weight:600">${ok?'✓ 全數載入':'⚠ 無資料'}</span>
+       </span>
+       <span style="color:var(--g500);margin-left:2px">共 ${n} 個 ${fileUnit}</span>`;
+    (n?fileList:['(無資料)']).forEach(f=>{
+      const li=document.createElement('li');li.textContent=f;fl.appendChild(li);
+    });
+
+    // Spec counts
+    const matchedSet=new Set(Object.keys(specsData.matched||{}));
+    const pending=afCols.filter(c=>!matchedSet.has(c));
+    document.getElementById('qSpecMatched').textContent=afCols.length-pending.length;
+    document.getElementById('qSpecPending').textContent=pending.length;
+    document.getElementById('clarifyCount').textContent=pending.length?`(${pending.length})`:'';
+    const b=document.getElementById('hBadgeSpec');
+    if(pending.length>0){ b.textContent=pending.length+' 點待澄清'; b.style.display=''; }
+    else{ b.style.display='none'; }
+
+    // Update mode-dependent titles
+    document.getElementById('summaryModeTitle').textContent=modeLabel+' 點位製程能力';
+    document.getElementById('trendsModeTitle').textContent=modeLabel+' 量測趨勢圖';
+
+    document.getElementById('loading').style.display='none';
+    document.getElementById('app').style.display='block';
+    refresh();
+    renderClarify();
+  }catch(e){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('errorBox').style.display='flex';
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────
+const getGlobalUSL=()=>parseFloat(document.getElementById('uslInput').value)||1.5;
+const getGlobalLSL=()=>parseFloat(document.getElementById('lslInput').value)||-1.5;
+
+const _MONTH={'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12};
+function _parseDate(s){
+  if(!s) return 0;
+  // ISO or already-normalized: "2025-10-05" or "2025-10-05 13:35"
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s.replace(' ','T')).getTime();
+  // "2025/10/5"
+  if(/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(s)){const p=s.split('/');return new Date(+p[0],+p[1]-1,+p[2]).getTime();}
+  const now=new Date();
+  // "6-Jan", "27-Mar"
+  let m=s.match(/^(\d{1,2})-([A-Za-z]{3})$/);
+  if(m){
+    const mo=_MONTH[m[2].toLowerCase()];
+    if(mo){
+      let yr=now.getFullYear();
+      let d=new Date(yr,mo-1,+m[1]);
+      if((d-now)>60*864e5) d=new Date(yr-1,mo-1,+m[1]);
+      return d.getTime();
+    }
+  }
+  // "9/4" → M/D
+  m=s.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if(m){
+    let yr=now.getFullYear();
+    let d=new Date(yr,+m[1]-1,+m[2]);
+    if((d-now)>60*864e5) d=new Date(yr-1,+m[1]-1,+m[2]);
+    return d.getTime();
+  }
+  return 0;
+}
+
+function getSpec(col){
+  const s=settingsData[col];
+  if(s&&s.risk_level==='low'){
+    const st=statsData[col];
+    if(st&&st.std>0)
+      return {usl:st.mean+3*st.std,lsl:st.mean-3*st.std,source:'control',nominal:s.control_nominal??null};
+  }
+  const m=specsData.matched&&specsData.matched[col];
+  if(m) return {usl:m.usl,lsl:m.lsl,source:m.type==='CMM'?'cmm':'pdf',pdf_point:m.pdf_point};
+  return {usl:getGlobalUSL(),lsl:getGlobalLSL(),source:'global'};
+}
+
+const SPC_LABELS=['','單點極端值','連續偏移','持續趨勢','週期跳動','逼近界限 2/3','逼近界限 4/5','過度集中','兩極化'];
+function detectSPC(vals,mean,sigma){
+  if(mean==null||!sigma||sigma<=0||!vals?.length) return{rules:[],warnIdx:new Set()};
+  const pts=[];
+  for(let i=0;i<vals.length;i++) if(vals[i]!=null) pts.push({i,z:(vals[i]-mean)/sigma,v:vals[i]});
+  const m=pts.length; if(m<2) return{rules:[],warnIdx:new Set()};
+  const triggered=[]; const warnIdx=new Set();
+  function mark(rule,a,b){triggered.push(rule);for(let k=a;k<=b;k++)warnIdx.add(pts[k].i);}
+  // R1: single point |z|>3
+  let r1=false; pts.forEach(p=>{if(Math.abs(p.z)>3){r1=true;warnIdx.add(p.i);}});
+  if(r1) triggered.push(1);
+  // R2: 9 consecutive same side of mean
+  for(let i=0;i<=m-9;i++){const s=pts.slice(i,i+9);if(s.every(p=>p.z>0)||s.every(p=>p.z<0)){mark(2,i,i+8);break;}}
+  // R3: 6 consecutive strictly monotone
+  for(let i=0;i<=m-6;i++){const s=pts.slice(i,i+6);let u=true,d=true;for(let j=1;j<6;j++){if(s[j].v<=s[j-1].v)u=false;if(s[j].v>=s[j-1].v)d=false;}if(u||d){mark(3,i,i+5);break;}}
+  // R4: 14 consecutive alternating direction
+  for(let i=0;i<=m-14;i++){const s=pts.slice(i,i+14);let a=true;for(let j=2;j<14;j++){const d1=s[j-1].v-s[j-2].v,d2=s[j].v-s[j-1].v;if(!d1||!d2||Math.sign(d1)===Math.sign(d2)){a=false;break;}}if(a){mark(4,i,i+13);break;}}
+  // R5: 2 of 3 in same-side A zone (|z|>2)
+  for(let i=0;i<=m-3;i++){const s=pts.slice(i,i+3);if(s.filter(p=>p.z>2).length>=2||s.filter(p=>p.z<-2).length>=2){mark(5,i,i+2);break;}}
+  // R6: 4 of 5 same side beyond 1σ
+  for(let i=0;i<=m-5;i++){const s=pts.slice(i,i+5);if(s.filter(p=>p.z>1).length>=4||s.filter(p=>p.z<-1).length>=4){mark(6,i,i+4);break;}}
+  // R7: 15 consecutive within ±1σ (C zone)
+  for(let i=0;i<=m-15;i++){if(pts.slice(i,i+15).every(p=>Math.abs(p.z)<1)){mark(7,i,i+14);break;}}
+  // R8: 8 consecutive outside C zone, both sides
+  for(let i=0;i<=m-8;i++){const s=pts.slice(i,i+8);if(s.every(p=>Math.abs(p.z)>=1)&&s.some(p=>p.z>0)&&s.some(p=>p.z<0)){mark(8,i,i+7);break;}}
+  return{rules:[...new Set(triggered)].sort((a,b)=>a-b),warnIdx};
+}
+
+function computeCap(col){
+  const {usl,lsl}=getSpec(col);
+  const s=statsData[col];
+  if(!s||s.n<2) return {n:s?.n||0,mean:null,std:null,min:null,max:null,cp:null,cpk:null,cpu:null,cpl:null,usl,lsl};
+  const {n,mean,std,min,max}=s;
+  if(!std||std===0) return {n,mean,std:0,min,max,cp:null,cpk:null,cpu:null,cpl:null,usl,lsl};
+  const cp=(usl-lsl)/(6*std), cpu=(usl-mean)/(3*std), cpl=(mean-lsl)/(3*std);
+  return {n,mean,std,min,max,cp,cpk:Math.min(cpu,cpl),cpu,cpl,usl,lsl};
+}
+
+const fmt=(v,d=3)=>v===null||v===undefined?'—':(+v).toFixed(d);
+const cpkCls=v=>v===null?'cn':v>=1.33?'cg':v>=1.0?'ca':'cr';
+
+function filteredCols(){
+  return afCols.filter(c=>{
+    if(!sideFilter.has(c[0])||!axisFilter.has(c[c.length-1])) return false;
+    const area=specsData.matched?.[c]?.area||'';
+    if(area&&areaFilter.size>0&&!areaFilter.has(area)) return false;
+    return true;
+  });
+}
+
+// ── Filter chips ─────────────────────────────────────────────────
+function toggleChip(el,type){
+  el.classList.toggle('on');
+  const v=type==='side'?el.dataset.side:el.dataset.axis;
+  const s=type==='side'?sideFilter:axisFilter;
+  s.has(v)?s.delete(v):s.add(v);
+  refresh();
+}
+function toggleChangelog(e){
+  e.stopPropagation();
+  const d=document.getElementById('clDrop');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',()=>{
+  const d=document.getElementById('clDrop');
+  if(d) d.style.display='none';
+});
+
+function toggleFileList(){
+  const fl=document.getElementById('fileList');
+  const btn=document.getElementById('fileListToggle');
+  const open=fl.style.display==='none';
+  fl.style.display=open?'block':'none';
+  btn.textContent=open?'▼ 收合':'▶ 展開';
+}
+
+function toggleTrendAxis(el){
+  el.classList.toggle('on');
+  const v=el.dataset.a;
+  trendAxisFilter.has(v)?trendAxisFilter.delete(v):trendAxisFilter.add(v);
+  renderTrends();
+}
+
+// ── Refresh (instant — no fetch) ─────────────────────────────────
+function refresh(){
+  const cols=filteredCols();
+  const capData=cols.map(c=>({col:c,...computeCap(c),specSource:getSpec(c).source}));
+  const cpks=capData.map(d=>d.cpk).filter(v=>v!==null);
+
+  const mLabel=currentMode==='sg'?'SG':'MF';
+  document.getElementById('hBadgeRows').textContent=totalBodies+' 筆車身';
+  document.getElementById('hBadgeCols').textContent=afCols.length+' '+mLabel+' 點位';
+  document.getElementById('sumSub').textContent=
+    `共 ${afCols.length} 個 ${mLabel} 點位｜有 PDF 規格者套用個別公差，其餘暫用 LSL=${getGlobalLSL()} / USL=+${getGlobalUSL()} mm`;
+
+  document.getElementById('qGood').textContent =cpks.filter(v=>v>=1.33).length;
+  document.getElementById('qWarn').textContent =cpks.filter(v=>v>=1.0&&v<1.33).length;
+  document.getElementById('qBad').textContent  =cpks.filter(v=>v<1.0).length;
+  document.getElementById('qTotal').textContent=capData.length;
+
+  tableData=capData;
+  applySort();
+  renderCpkBar(capData);
+
+  updateIssuesCount();
+  // Re-render visible tabs
+  if(document.getElementById('panel-trends').classList.contains('on')) renderTrends();
+  if(document.getElementById('panel-clarify').classList.contains('on')) renderClarify();
+  if(document.getElementById('panel-issues').classList.contains('on')) renderIssues();
+}
+
+// ── Cpk filter (from sidebar cards) ─────────────────────────────
+function setCpkFilter(type){
+  cpkFilter=type;
+  // Update card active states
+  ['good','warn','bad','all'].forEach(k=>{
+    document.getElementById('card-'+k).classList.toggle('active', k===(type||'all'));
+  });
+  // Update badge
+  const badge=document.getElementById('filterBadge');
+  const cfg={
+    good:['filter-badge-g','Cpk ≥ 1.33'],
+    warn:['filter-badge-a','1.0 ≤ Cpk < 1.33'],
+    bad: ['filter-badge-r','Cpk < 1.0']
+  };
+  if(type&&cfg[type]){
+    const [cls,label]=cfg[type];
+    badge.innerHTML=`<span class="filter-badge ${cls}">${label}<button onclick="setCpkFilter(null)" title="清除篩選">×</button></span>`;
+  } else {
+    badge.innerHTML='';
+  }
+  // Switch to summary tab and re-render
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelector('.tab').classList.add('on');
+  document.getElementById('panel-summary').classList.add('on');
+  applySort();
+}
+
+// ── Summary Table ────────────────────────────────────────────────
+function sortTable(col){sortCol===col?sortDir*=-1:(sortDir=1,sortCol=col);applySort();}
+function applySort(){
+  const keys=['col','specSource','usl','lsl','n','mean','std','min','max','cp','cpk'];
+  const filterFn={
+    good: d=>d.cpk!==null&&d.cpk>=1.33,
+    warn: d=>d.cpk!==null&&d.cpk>=1.0&&d.cpk<1.33,
+    bad:  d=>d.cpk!==null&&d.cpk<1.0
+  };
+  const source=cpkFilter?tableData.filter(filterFn[cpkFilter]):tableData;
+  const s=[...source].sort((a,b)=>{
+    const av=a[keys[sortCol]],bv=b[keys[sortCol]];
+    if(av===null&&bv===null)return 0;
+    if(av===null)return 1;if(bv===null)return-1;
+    return(av>bv?1:-1)*sortDir;
+  });
+  const tb=document.getElementById('sumBody');
+  tb.innerHTML='';
+  s.forEach(d=>{
+    const badge=d.specSource==='pdf'
+      ?'<span class="spec-badge spec-pdf">PDF ✓</span>'
+      :d.specSource==='control'
+      ?'<span class="spec-badge spec-control">管制值</span>'
+      :'<span class="spec-badge spec-global">待澄清</span>';
+    const rs=settingsData[d.col];
+    const rl=rs?.risk_level||'';
+    const dotCls=rl==='high'?'risk-dot-high':rl==='low'?'risk-dot-low':'risk-dot-none';
+    const dotTitle=rl==='high'?'高風險':rl==='low'?'低風險':'未評估';
+    const area=specsData.matched?.[d.col]?.area||'';
+    const tr=document.createElement('tr');
+    tr.style.cursor='pointer';
+    tr.title='點擊開啟單點分析';
+    tr.onclick=()=>switchToDetail(d.col);
+    tr.innerHTML=`<td><b>${d.col}</b></td><td style="font-size:11px;color:var(--g500);max-width:160px;white-space:normal;line-height:1.3">${area||'—'}</td><td>${badge}</td><td>${fmt(d.usl,2)}</td><td>${fmt(d.lsl,2)}</td><td>${d.n}</td><td>${fmt(d.mean)}</td><td>${fmt(d.std)}</td><td>${fmt(d.min)}</td><td>${fmt(d.max)}</td><td><span class="cpk ${cpkCls(d.cp)}">${fmt(d.cp,2)}</span></td><td><span class="cpk ${cpkCls(d.cpk)}">${fmt(d.cpk,2)}</span></td><td><span class="risk-dot ${dotCls}" title="${dotTitle}"></span></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+// ── Cpk Bar ──────────────────────────────────────────────────────
+function renderCpkBar(data){
+  const s=[...data].filter(d=>d.cpk!==null).sort((a,b)=>a.cpk-b.cpk);
+  Plotly.newPlot('cpkBarDiv',[{
+    x:s.map(d=>d.col),y:s.map(d=>d.cpk),type:'bar',
+    marker:{color:s.map(d=>d.cpk>=1.33?'#16a34a':d.cpk>=1.0?'#d97706':'#dc2626')},
+    text:s.map(d=>d.cpk.toFixed(2)),textposition:'outside',
+    hovertemplate:'%{x}<br>Cpk: <b>%{y:.3f}</b><extra></extra>'
+  }],{
+    title:{text:'各點位 Cpk',font:{size:13},x:0},
+    shapes:[
+      {type:'line',xref:'paper',x0:0,x1:1,y0:1.33,y1:1.33,line:{color:'#16a34a',dash:'dash',width:1.5}},
+      {type:'line',xref:'paper',x0:0,x1:1,y0:1.0,y1:1.0,line:{color:'#d97706',dash:'dash',width:1.5}}
+    ],
+    annotations:[
+      {xref:'paper',x:1.01,y:1.33,text:'1.33',showarrow:false,font:{size:10,color:'#16a34a'},xanchor:'left'},
+      {xref:'paper',x:1.01,y:1.0, text:'1.00',showarrow:false,font:{size:10,color:'#d97706'},xanchor:'left'}
+    ],
+    xaxis:{tickangle:-60,tickfont:{size:10}},
+    yaxis:{title:'Cpk',zeroline:false},
+    height:340,margin:{t:36,b:110,l:55,r:60},
+    plot_bgcolor:'#f8fafc',paper_bgcolor:'#fff',showlegend:false
+  },{responsive:true,displayModeBar:'hover'});
+}
+
+// ── Trend: Lazy load ──────────────────────────────────────────────
+function renderTrends(){
+  const search=(document.getElementById('tcSearch').value||'').toLowerCase();
+  const cols=filteredCols().filter(c=>trendAxisFilter.has(c[c.length-1])&&c.toLowerCase().includes(search));
+  const grid=document.getElementById('trendGrid');
+  // Disconnect old observer targets
+  if(chartObserver) grid.querySelectorAll('[data-col]').forEach(el=>chartObserver.unobserve(el));
+  grid.innerHTML='';
+
+  if(!cols.length){
+    grid.innerHTML='<p style="padding:40px;color:var(--g500);text-align:center;grid-column:1/-1">沒有符合篩選條件的點位</p>';
+    return;
+  }
+
+  cols.forEach(col=>{
+    const r=computeCap(col);
+    const cls=cpkCls(r.cpk);
+    const clrMap={'cg':['#15803d','#f0fdf4'],'ca':['#92400e','#fffbeb'],'cr':['#991b1b','#fef2f2'],'cn':['#64748b','#f1f5f9']};
+    const [tc,bg]=clrMap[cls];
+    const spec=getSpec(col);
+    const specTag=spec.source==='pdf'?' <span style="font-size:10px;color:#15803d">PDF✓</span>':spec.source==='cmm'?' <span style="font-size:10px;color:#0369a1">XML✓</span>':'';
+    const card=document.createElement('div');
+    card.className='ch-card';
+    card.dataset.col=col;
+    card.innerHTML=`
+      <div class="ch-hd">
+        <span class="ch-name">${col}${specTag}</span>
+        <span class="ch-cpk" style="color:${tc};background:${bg}">Cpk ${r.cpk!==null?r.cpk.toFixed(2):'N/A'}</span>
+      </div>
+      <div class="ch-placeholder"><div class="spin-sm"></div> 捲動時載入…</div>`;
+    grid.appendChild(card);
+    if(chartObserver) chartObserver.observe(card);
+  });
+}
+
+async function loadTrendChart(col, container){
+  const placeholder=container.querySelector('.ch-placeholder');
+  if(placeholder) placeholder.innerHTML='<div class="spin-sm"></div> 載入中…';
+  try{
+    const data=trendCache[col]??await fetch('/api/trend?col='+encodeURIComponent(col)+'&'+_modeQueryParam(currentMode)).then(r=>r.json()).then(d=>d.data);
+    const r=computeCap(col);
+    const {usl,lsl}=r;
+    const spec=getSpec(col);
+    const isCtrl=spec.source==='control';
+    const limitC=isCtrl?'#ea580c':'#dc2626';
+    const data30=data.slice(-30);
+    const vals=data30.map(d=>d.val);
+    const xIdx=data30.map((_,i)=>i);
+    const xTicks=data30.map(d=>d.serial_no||'');
+    const spc=spcCache[col]||(r.mean!==null&&r.std>0?detectSPC(vals,r.mean,r.std):{rules:[],warnIdx:new Set()});
+    if(!spcCache[col]) spcCache[col]=spc;
+    const ptColors=vals.map((v,i)=>v===null?'#94a3b8':v>usl||v<lsl?limitC:spc.warnIdx.has(i)?'#f59e0b':'#3b82f6');
+
+    // Replace placeholder with plot div
+    const plotDiv=document.createElement('div');
+    if(placeholder) placeholder.replaceWith(plotDiv);
+    else container.appendChild(plotDiv);
+
+    Plotly.newPlot(plotDiv,[{
+      x:xIdx,y:vals,type:'scatter',mode:'lines+markers',
+      text:data30.map(d=>(d.serial_no||'')+'<br>'+(d.date||'')),
+      hovertemplate:'%{text}<br><b>%{y:.3f} mm</b><extra></extra>',
+      marker:{color:ptColors,size:7},line:{color:'#3b82f6',width:1.5}
+    }],{
+      shapes:[
+        {type:'rect',xref:'paper',x0:0,x1:1,y0:lsl,y1:usl,fillcolor:isCtrl?'rgba(234,88,12,.06)':'rgba(34,197,94,.06)',line:{width:0}},
+        {type:'line',xref:'paper',x0:0,x1:1,y0:usl,y1:usl,line:{color:limitC,dash:'dash',width:1.2}},
+        {type:'line',xref:'paper',x0:0,x1:1,y0:lsl,y1:lsl,line:{color:limitC,dash:'dash',width:1.2}},
+        {type:'line',xref:'paper',x0:0,x1:1,y0:0,y1:0,line:{color:'#94a3b8',dash:'dot',width:1}},
+        ...(isCtrl&&spec.nominal!=null?[{type:'line',xref:'paper',x0:0,x1:1,y0:spec.nominal,y1:spec.nominal,line:{color:'#ea580c',dash:'dot',width:1.2}}]:[]),
+        ...(r.mean!==null?[{type:'line',xref:'paper',x0:0,x1:1,y0:r.mean,y1:r.mean,line:{color:'#2563eb',width:1.2}}]:[])
+      ],
+      annotations:[
+        {xref:'paper',x:1.01,y:usl,text:`${isCtrl?'UCL':'USL'} ${usl}`,showarrow:false,font:{size:9,color:limitC},xanchor:'left'},
+        {xref:'paper',x:1.01,y:lsl,text:`${isCtrl?'LCL':'LSL'} ${lsl}`,showarrow:false,font:{size:9,color:limitC},xanchor:'left'},
+        ...(isCtrl&&spec.nominal!=null?[{xref:'paper',x:1.01,y:spec.nominal,text:`中值 ${spec.nominal}`,showarrow:false,font:{size:9,color:'#ea580c'},xanchor:'left'}]:[]),
+        ...(r.mean!==null?[{xref:'paper',x:1.01,y:r.mean,text:`x̄${r.mean.toFixed(2)}`,showarrow:false,font:{size:9,color:'#2563eb'},xanchor:'left'}]:[]),
+        ...(spc.rules.length?[{xref:'paper',yref:'paper',x:0.99,y:0.02,xanchor:'right',yanchor:'bottom',
+          text:'⚠ '+spc.rules.map(rn=>`R${rn}`).join(' '),showarrow:false,
+          font:{size:9,color:'#92400e'},bgcolor:'rgba(255,251,235,0.92)',bordercolor:'#d97706',borderwidth:1,borderpad:3}]:[])
+      ],
+      xaxis:{tickmode:'array',tickvals:xIdx,ticktext:xTicks,tickangle:-30,tickfont:{size:9}},
+      yaxis:{title:'mm',titlefont:{size:10},tickfont:{size:9}},
+      height:200,margin:{t:4,b:48,l:42,r:52},
+      plot_bgcolor:'#f8fafc',paper_bgcolor:'#fff',showlegend:false
+    },{responsive:true,displayModeBar:'hover'});
+    if(spc.rules.length){
+      const spcFoot=document.createElement('div');
+      spcFoot.className='ch-spc';
+      spcFoot.innerHTML='⚠ '+spc.rules.map(rn=>`<span>R${rn} ${SPC_LABELS[rn]}</span>`).join(' ｜ ');
+      container.appendChild(spcFoot);
+    }
+  }catch(e){
+    const ph=container.querySelector('.ch-placeholder');
+    if(ph) ph.innerHTML='<span style="color:var(--red)">載入失敗</span>';
+  }
+}
+
+// ── Detail (async, on-demand fetch) ──────────────────────────────
+async function renderDetail(){
+  const col=document.getElementById('detSelect').value;
+  if(!col) return;
+
+  const loading='<div style="height:200px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--g500)"><div class="spin-sm"></div> 載入中…</div>';
+  document.getElementById('detTrendDiv').innerHTML=loading;
+  document.getElementById('detHistDiv').innerHTML='';
+  document.getElementById('detStats').innerHTML='<h3>統計摘要</h3>'+loading;
+  document.getElementById('detRisk').innerHTML='';
+
+  try{
+    const data=trendCache[col]??await fetch('/api/trend?col='+encodeURIComponent(col)+'&'+_modeQueryParam(currentMode)).then(r=>r.json()).then(d=>d.data);
+
+    const r=computeCap(col);
+    const {usl,lsl}=r;
+    const spec=getSpec(col);
+    const area=specsData.matched?.[col]?.area||'';
+    const data30=data.slice(-30);
+    const vals=data30.map(d=>d.val);
+    const xIdx=data30.map((_,i)=>i);
+    const xTicks=data30.map(d=>d.serial_no||'');
+    const isCtrl=spec.source==='control';
+    const limitC=isCtrl?'#ea580c':'#dc2626';
+    const spc=r.mean!==null&&r.std>0?detectSPC(vals,r.mean,r.std):{rules:[],warnIdx:new Set()};
+    const spcText=spc.rules.length
+      ?'⚠ 製程預測<br>'+spc.rules.map(rn=>`規則${rn}：${SPC_LABELS[rn]}`).join('<br>')
+      :'✓ 製程正常';
+    const spcFg=spc.rules.length?'#92400e':'#15803d';
+    const spcBg=spc.rules.length?'rgba(255,251,235,0.92)':'rgba(240,253,244,0.92)';
+    const spcBd=spc.rules.length?'#d97706':'#16a34a';
+    const ptColors=vals.map((v,i)=>v===null?'#94a3b8':v>usl||v<lsl?limitC:spc.warnIdx.has(i)?'#f59e0b':'#3b82f6');
+
+    document.getElementById('detTrendDiv').innerHTML='';
+    Plotly.newPlot('detTrendDiv',[{
+      x:xIdx,y:vals,type:'scatter',mode:'lines+markers',
+      text:data30.map(d=>(d.serial_no||'')+'<br>'+(d.date||'')),
+      hovertemplate:'%{text}<br><b>%{y:.4f} mm</b><extra></extra>',
+      marker:{color:ptColors,size:10,line:{width:1.5,color:'white'}},
+      line:{color:'#3b82f6',width:2}
+    }],{
+      title:{text:col+(area?' ｜ '+area:'')+(isCtrl?' 趨勢圖（管制值）':' 趨勢圖'),font:{size:14},x:0},
+      shapes:[
+        {type:'rect',xref:'paper',x0:0,x1:1,y0:lsl,y1:usl,fillcolor:isCtrl?'rgba(234,88,12,.07)':'rgba(34,197,94,.07)',line:{width:0}},
+        {type:'line',xref:'paper',x0:0,x1:1,y0:usl,y1:usl,line:{color:limitC,dash:'dash',width:1.5}},
+        {type:'line',xref:'paper',x0:0,x1:1,y0:lsl,y1:lsl,line:{color:limitC,dash:'dash',width:1.5}},
+        {type:'line',xref:'paper',x0:0,x1:1,y0:0,y1:0,line:{color:'#94a3b8',dash:'dot',width:1}},
+        ...(isCtrl&&spec.nominal!=null?[{type:'line',xref:'paper',x0:0,x1:1,y0:spec.nominal,y1:spec.nominal,line:{color:'#ea580c',dash:'dot',width:1.5}}]:[]),
+        ...(r.mean!==null?[{type:'line',xref:'paper',x0:0,x1:1,y0:r.mean,y1:r.mean,line:{color:'#2563eb',width:1.5}}]:[]),
+        ...(r.std&&r.std>0?[
+          {type:'line',xref:'paper',x0:0,x1:1,y0:r.mean+3*r.std,y1:r.mean+3*r.std,line:{color:'#d97706',dash:'dashdot',width:1}},
+          {type:'line',xref:'paper',x0:0,x1:1,y0:r.mean-3*r.std,y1:r.mean-3*r.std,line:{color:'#d97706',dash:'dashdot',width:1}},
+          {type:'line',xref:'paper',x0:0,x1:1,y0:r.mean+2*r.std,y1:r.mean+2*r.std,line:{color:'rgba(217,119,6,0.25)',dash:'dot',width:1}},
+          {type:'line',xref:'paper',x0:0,x1:1,y0:r.mean-2*r.std,y1:r.mean-2*r.std,line:{color:'rgba(217,119,6,0.25)',dash:'dot',width:1}},
+          {type:'line',xref:'paper',x0:0,x1:1,y0:r.mean+r.std,y1:r.mean+r.std,line:{color:'rgba(148,163,184,0.4)',dash:'dot',width:1}},
+          {type:'line',xref:'paper',x0:0,x1:1,y0:r.mean-r.std,y1:r.mean-r.std,line:{color:'rgba(148,163,184,0.4)',dash:'dot',width:1}}
+        ]:[])
+      ],
+      annotations:[
+        {xref:'paper',x:1.01,y:usl,text:`${isCtrl?'UCL':'USL'} ${usl}`,showarrow:false,font:{size:10,color:limitC},xanchor:'left'},
+        {xref:'paper',x:1.01,y:lsl,text:`${isCtrl?'LCL':'LSL'} ${lsl}`,showarrow:false,font:{size:10,color:limitC},xanchor:'left'},
+        ...(isCtrl&&spec.nominal!=null?[{xref:'paper',x:1.01,y:spec.nominal,text:`管制中值 ${spec.nominal}`,showarrow:false,font:{size:10,color:'#ea580c'},xanchor:'left'}]:[]),
+        ...(r.mean!==null?[{xref:'paper',x:1.01,y:r.mean,text:`x̄=${r.mean.toFixed(3)}`,showarrow:false,font:{size:10,color:'#2563eb'},xanchor:'left'}]:[]),
+        ...(r.std&&r.std>0?[
+          {xref:'paper',x:1.01,y:r.mean+3*r.std,text:'+3σ',showarrow:false,font:{size:9,color:'#d97706'},xanchor:'left'},
+          {xref:'paper',x:1.01,y:r.mean-3*r.std,text:'-3σ',showarrow:false,font:{size:9,color:'#d97706'},xanchor:'left'},
+          {xref:'paper',x:1.01,y:r.mean+2*r.std,text:'+2σ',showarrow:false,font:{size:9,color:'rgba(217,119,6,0.6)'},xanchor:'left'},
+          {xref:'paper',x:1.01,y:r.mean-2*r.std,text:'-2σ',showarrow:false,font:{size:9,color:'rgba(217,119,6,0.6)'},xanchor:'left'},
+          {xref:'paper',x:1.01,y:r.mean+r.std,text:'+1σ',showarrow:false,font:{size:9,color:'rgba(148,163,184,0.7)'},xanchor:'left'},
+          {xref:'paper',x:1.01,y:r.mean-r.std,text:'-1σ',showarrow:false,font:{size:9,color:'rgba(148,163,184,0.7)'},xanchor:'left'}
+        ]:[]),
+        {xref:'paper',yref:'paper',x:0.99,y:0.02,xanchor:'right',yanchor:'bottom',
+          text:spcText,showarrow:false,font:{size:10,color:spcFg},
+          bgcolor:spcBg,bordercolor:spcBd,borderwidth:1,borderpad:4,align:'left'}
+      ],
+      xaxis:{tickmode:'array',tickvals:xIdx,ticktext:xTicks,tickangle:-20,title:'車身序號'},
+      yaxis:{title:'偏差值 (mm)'},
+      height:360,margin:{t:44,b:70,l:60,r:90},
+      plot_bgcolor:'#f8fafc',paper_bgcolor:'#fff',showlegend:false
+    },{responsive:true,displayModeBar:'hover'});
+
+    const validVals=vals.filter(v=>v!==null);
+    document.getElementById('detHistDiv').innerHTML='';
+    if(validVals.length>=2){
+      Plotly.newPlot('detHistDiv',[{
+        x:validVals,type:'histogram',nbinsx:Math.max(5,validVals.length),
+        marker:{color:'#3b82f6',opacity:.8}
+      }],{
+        title:{text:'量測值分佈',font:{size:13},x:0},
+        shapes:[
+          {type:'line',xref:'x',x0:usl,x1:usl,yref:'paper',y0:0,y1:1,line:{color:limitC,dash:'dash',width:1.5}},
+          {type:'line',xref:'x',x0:lsl,x1:lsl,yref:'paper',y0:0,y1:1,line:{color:limitC,dash:'dash',width:1.5}},
+          ...(isCtrl&&spec.nominal!=null?[{type:'line',xref:'x',x0:spec.nominal,x1:spec.nominal,yref:'paper',y0:0,y1:1,line:{color:'#ea580c',dash:'dot',width:1.5}}]:[]),
+          ...(r.mean!==null?[{type:'line',xref:'x',x0:r.mean,x1:r.mean,yref:'paper',y0:0,y1:1,line:{color:'#2563eb',width:1.5}}]:[])
+        ],
+        xaxis:{title:'mm'},yaxis:{title:'次數'},
+        height:240,margin:{t:40,b:50,l:50,r:20},
+        plot_bgcolor:'#f8fafc',paper_bgcolor:'#fff',showlegend:false
+      },{responsive:true,displayModeBar:'hover'});
+    }
+
+    // ── Within-subgroup σ (Cp/Cpk) via pooled variance grouped by date ──
+    const _groups={};
+    for(const d of data){
+      if(d.val===null) continue;
+      const k=d.date||'unknown';
+      if(!_groups[k]) _groups[k]=[];
+      _groups[k].push(d.val);
+    }
+    let _sumSqDev=0,_sumDF=0,_nSub=0,_nSingle=0;
+    for(const gVals of Object.values(_groups)){
+      if(gVals.length<2){_nSingle++;continue;}
+      const gMean=gVals.reduce((a,b)=>a+b,0)/gVals.length;
+      _sumSqDev+=gVals.reduce((s,v)=>s+(v-gMean)**2,0);
+      _sumDF+=gVals.length-1;
+      _nSub++;
+    }
+    const sigmaW=_sumDF>0?Math.sqrt(_sumSqDev/_sumDF):null;
+    let cp_w=null,cpk_w=null,cpu_w=null,cpl_w=null;
+    if(sigmaW&&sigmaW>0&&r.mean!==null){
+      cp_w=(usl-lsl)/(6*sigmaW);
+      cpu_w=(usl-r.mean)/(3*sigmaW);
+      cpl_w=(r.mean-lsl)/(3*sigmaW);
+      cpk_w=Math.min(cpu_w,cpl_w);
+    }
+    const cpkWCls=cpkCls(cpk_w);
+
+    // Pp/Ppk uses overall σ (r.std); Cp/Cpk uses σ_within (sigmaW)
+    const cls=cpkCls(r.cpk);
+    const statusMap={'cg':['s-g','✅ 製程能力良好 (Cpk ≥ 1.33)'],'ca':['s-a','⚠️ 製程能力偏低，建議改善'],'cr':['s-b','❌ 製程能力不足 (Cpk < 1.0)'],'cn':['s-n','— 樣本不足']};
+    const [sc,st]=statusMap[cpkWCls];  // status badge driven by true Cpk
+    const outOfSpec=data.filter(d=>d.val!==null&&(d.val>usl||d.val<lsl)).length;
+    const rawRows=[...data].sort((a,b)=>_parseDate(b.date)-_parseDate(a.date)).map(d=>{
+      const oos=d.val!==null&&(d.val>usl||d.val<lsl);
+      return `<tr><td>${d.serial_no||''}</td><td>${d.date||''}</td><td style="text-align:right;color:${oos?'#dc2626':'inherit'};font-weight:${oos?700:400}">${d.val!==null?d.val.toFixed(4):'—'}</td></tr>`;
+    }).join('');
+
+    const specSrcHtml=spec.source==='pdf'
+      ?`<div class="sr"><span class="sr-l">規格來源</span><span class="sr-v" style="color:#15803d">PDF ✓ (${spec.pdf_point||''})</span></div>`
+      :spec.source==='control'
+      ?`<div class="sr"><span class="sr-l">規格來源</span><span class="sr-v" style="color:#ea580c">管制值 ✓</span></div>`
+      :`<div class="sr"><span class="sr-l">規格來源</span><span class="sr-v" style="color:var(--amber)">暫用全局（待澄清）</span></div>`;
+
+    const capRow=(l,v,big=false)=>`<div class="sr"><span class="sr-l">${l}</span><span class="sr-v"${big?' style="font-size:16px"':''}>${v}</span></div>`;
+
+    document.getElementById('detStats').innerHTML=`
+      <h3>統計摘要</h3>${specSrcHtml}
+      ${area?`<div class="sr"><span class="sr-l">位置</span><span class="sr-v" style="font-size:11px;color:var(--g500);text-align:right;line-height:1.4">${area}</span></div>`:''}
+      ${[['點位',col],['USL',`+${usl} mm`],['LSL',`${lsl} mm`],['樣本數 (n)',r.n],
+         ['平均值',fmt(r.mean,4)+' mm'],
+         ['最小值',fmt(r.min,4)+' mm'],['最大值',fmt(r.max,4)+' mm'],
+         ['超差筆數',outOfSpec+' / '+r.n]
+      ].map(([l,v])=>`<div class="sr"><span class="sr-l">${l}</span><span class="sr-v">${v}</span></div>`).join('')}
+
+      <div style="border-top:1px solid var(--g200);margin:10px 0;padding-top:8px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:6px">Cp / Cpk — 短期（組內 σ）</div>
+        ${sigmaW?`
+        ${capRow('σ_within',fmt(sigmaW,4)+' mm')}
+        ${[['Cp',fmt(cp_w,3)],['Cpk',fmt(cpk_w,3)],['CPU',fmt(cpu_w,3)],['CPL',fmt(cpl_w,3)]].map(([l,v])=>capRow(l,v,true)).join('')}
+        <div style="font-size:10px;color:var(--g400);margin-top:4px">共 ${_nSub} 組（n≥2）用於組內σ估計${_nSingle?' ｜ '+_nSingle+' 組 n=1 不計入':''}</div>
+        `:`<div style="font-size:12px;color:var(--g400)">所有量測批次 n=1，無法估計組內σ</div>`}
+      </div>
+
+      <div style="border-top:1px solid var(--g200);margin:10px 0;padding-top:8px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:6px">Pp / Ppk — 長期（整體 σ）</div>
+        ${capRow('σ_overall',fmt(r.std,4)+' mm')}
+        ${[['Pp',fmt(r.cp,3)],['Ppk',fmt(r.cpk,3)],['PPU',fmt(r.cpu,3)],['PPL',fmt(r.cpl,3)]].map(([l,v])=>capRow(l,v,true)).join('')}
+      </div>
+
+      <div class="status ${sc}">${st}</div>
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:6px">原始數據</div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <thead><tr>
+            <th style="background:var(--g50);padding:5px 8px;text-align:left;font-weight:600;color:var(--g700);border-bottom:1px solid var(--g200)">序號</th>
+            <th style="background:var(--g50);padding:5px 8px;font-weight:600;color:var(--g700);border-bottom:1px solid var(--g200)">日期</th>
+            <th style="background:var(--g50);padding:5px 8px;text-align:right;font-weight:600;color:var(--g700);border-bottom:1px solid var(--g200)">量測值</th>
+          </tr></thead>
+          <tbody>${rawRows}</tbody>
+        </table>
+      </div>`;
+
+    // ── Risk assessment section ──
+    const rs=settingsData[col]||{};
+    const rl=rs.risk_level||'';
+    const rNom=rs.control_nominal!=null?rs.control_nominal:'';
+    const rDesc=rs.risk_description||'';
+    const colStat=statsData[col];
+    const ctrlUsl=colStat&&colStat.std>0?colStat.mean+3*colStat.std:null;
+    const ctrlLsl=colStat&&colStat.std>0?colStat.mean-3*colStat.std:null;
+    const selNone=rl===''?'checked':'', selLow=rl==='low'?'checked':'', selHigh=rl==='high'?'checked':'';
+    const colLogs=auditLog.filter(e=>e.col===col).slice(0,20);
+    const fieldNames={risk_level:'風險等級',control_usl:'UCL',control_lsl:'LCL',control_nominal:'中值',risk_description:'風險說明'};
+    const auditHtml=colLogs.length
+      ?colLogs.map(e=>{
+          const ch=Object.entries(e.changes).map(([k,{from:f,to:t}])=>
+            `${fieldNames[k]||k}: ${f??'（空）'} → ${t??'（空）'}`).join(' ｜ ');
+          return `<div class="audit-entry"><span class="audit-time">${e.changed_at}</span><span class="audit-change">${ch}</span></div>`;
+        }).join('')
+      :'<div style="font-size:12px;color:var(--g400)">尚無變更紀錄</div>';
+    const escCol=col.replace(/'/g,"\\'");
+    document.getElementById('detRisk').innerHTML=`
+    <div class="risk-card">
+      <h3>風險評估與管制設定 — ${col}</h3>
+      <div class="risk-opts">
+        <label class="risk-opt${rl===''?' ':''}">
+          <input type="radio" id="ro_none_${col}" name="rl_${col}" value="" ${selNone} onchange="onRiskChange('${escCol}','')">
+          <div><div class="risk-opt-label">⚪ 未設定</div><div class="risk-opt-desc">尚未進行風險評估</div></div>
+        </label>
+        <label class="risk-opt${rl==='low'?' selected-low':''}">
+          <input type="radio" id="ro_low_${col}" name="rl_${col}" value="low" ${selLow} onchange="onRiskChange('${escCol}','low')">
+          <div><div class="risk-opt-label">🟡 低風險</div><div class="risk-opt-desc">不影響整車品質，可設定管制值取代全局公差進行 Cpk 計算</div></div>
+        </label>
+        <label class="risk-opt${rl==='high'?' selected-high':''}">
+          <input type="radio" id="ro_high_${col}" name="rl_${col}" value="high" ${selHigh} onchange="onRiskChange('${escCol}','high')">
+          <div><div class="risk-opt-label">🔴 高風險</div><div class="risk-opt-desc">影響整車品質，將列入「需改善」頁面集中管理</div></div>
+        </label>
+      </div>
+      <div id="riskLowSec_${col}" style="display:${rl==='low'?'block':'none'}">
+        <div class="risk-extra">
+          <label>管制限（自動計算：x̄ ± 3σ）</label>
+          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:6px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:#ea580c;width:36px">UCL</span>
+              <span style="font-size:13px;font-weight:700;color:#ea580c">${ctrlUsl!=null?ctrlUsl.toFixed(3)+' mm':'—'}</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-size:12px;font-weight:600;color:#ea580c;width:36px">LCL</span>
+              <span style="font-size:13px;font-weight:700;color:#ea580c">${ctrlLsl!=null?ctrlLsl.toFixed(3)+' mm':'—'}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--g400);margin-top:4px">x̄ = ${fmt(st?.mean,3)} mm，σ = ${fmt(st?.std,4)} mm</div>
+        </div>
+        <div class="risk-extra" style="margin-top:6px">
+          <label>管制中值（目標值，選填）</label>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <span style="font-size:12px;color:#ea580c;width:36px">中值</span>
+            <input class="risk-input" id="riskNom_${col}" type="number" step="0.01" value="${rNom}" placeholder="預設以 x̄ = ${fmt(st?.mean,3)} 為中心">
+          </div>
+        </div>
+      </div>
+      <div id="riskHighSec_${col}" style="display:${rl==='high'?'block':'none'}">
+        <div class="risk-extra">
+          <label>品質風險說明</label>
+          <textarea class="risk-textarea" id="riskDesc_${col}" placeholder="描述此點位可能造成的品質問題，如：影響門縫均勻性，導致客戶感知不良…">${rDesc}</textarea>
+        </div>
+      </div>
+      <div class="risk-save-row">
+        <button class="btn-risk-save" onclick="saveRiskSettings('${escCol}')">儲存設定</button>
+        <span class="risk-save-status" id="riskSaveStatus_${col}"></span>
+      </div>
+      <div class="audit-log-section">
+        <div class="audit-log-title">變更紀錄</div>
+        ${auditHtml}
+      </div>
+    </div>`;
+  }catch(e){
+    document.getElementById('detTrendDiv').innerHTML='<p style="padding:20px;color:var(--red)">載入失敗，請確認伺服器正常運行</p>';
+  }
+}
+
+// ── Clarify Tab ───────────────────────────────────────────────────
+function renderClarify(){
+  const matchedSet=new Set(Object.keys(specsData.matched||{}));
+  const pending=afCols.filter(c=>!matchedSet.has(c));
+  const matchedCount=afCols.length-pending.length;
+  const cc=document.getElementById('clarifyContent');
+  let html='';
+
+  html+=`<div class="alert alert-warn">
+    <div class="alert-title">規格配對結果：${matchedCount} / ${afCols.length} 個點位找到規格</div>
+    <div>已匯入的 PDF 屬於 <code>FS1-6X</code> 程式（點位名如 <code>R900ECS0S846-X</code>）；
+    CSV 屬於 <code>MF MP1</code> 程式（點位名如 <code>L101AFZ</code>）。<br>
+    兩套程式命名系統不相容，9 份 PDF 共 1,052 個規格，全部無法自動對應至 ${afCols.length} 個 CSV 點位。</div>
+    <div style="margin-top:8px"><b>建議：</b>提供 <code>BIW CX743 MF MP1</code> 程式的規格文件，或點位對照表。</div>
+  </div>`;
+
+  if(matchedCount>0){
+    html+=`<div class="alert alert-info">
+      <div class="alert-title">✅ 已配對 ${matchedCount} 個點位</div>
+      <div style="margin-top:4px">
+        ${Object.entries(specsData.matched).map(([col,s])=>`<code>${col}</code> → <code>${s.pdf_point}</code>（USL=${s.usl}/LSL=${s.lsl}）`).join('<br>')}
+      </div>
+    </div>`;
+  }
+
+  html+=`<div style="margin-bottom:10px">
+    <div class="sec-title">待澄清點位一覽（${pending.length} 點）</div>
+    <div class="sec-sub">以下點位尚無確認規格，以全局預設公差暫算，數據僅供參考。</div>
+  </div>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>點位</th><th>暫用 USL</th><th>暫用 LSL</th><th>n</th>
+    <th>平均值</th><th>標準差</th><th>最小值</th><th>最大值</th><th>Cpk（暫用）</th></tr></thead>
+    <tbody>`;
+
+  pending.forEach(col=>{
+    const r=computeCap(col);
+    html+=`<tr><td><b>${col}</b></td><td style="color:var(--g500)">+${r.usl}</td>
+      <td style="color:var(--g500)">${r.lsl}</td><td>${r.n}</td>
+      <td>${fmt(r.mean)}</td><td>${fmt(r.std)}</td><td>${fmt(r.min)}</td><td>${fmt(r.max)}</td>
+      <td><span class="cpk ${cpkCls(r.cpk)}">${fmt(r.cpk,2)}</span></td></tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+  cc.innerHTML=html;
+}
+
+// ── Risk assessment functions ─────────────────────────────────────
+function onRiskChange(col, val){
+  document.getElementById('riskLowSec_'+col).style.display=val==='low'?'block':'none';
+  document.getElementById('riskHighSec_'+col).style.display=val==='high'?'block':'none';
+  [['none',''],['low','low'],['high','high']].forEach(([sfx,v])=>{
+    const el=document.getElementById('ro_'+sfx+'_'+col);
+    if(!el) return;
+    const lbl=el.closest('.risk-opt');
+    lbl.className='risk-opt'+(val==='low'&&v==='low'?' selected-low':val==='high'&&v==='high'?' selected-high':'');
+  });
+}
+
+async function saveRiskSettings(col){
+  const radios=document.querySelectorAll(`input[name="rl_${col}"]`);
+  const level=[...radios].find(r=>r.checked)?.value||null;
+  const nomEl=document.getElementById('riskNom_'+col);
+  const descEl=document.getElementById('riskDesc_'+col);
+  const nom=nomEl?parseFloat(nomEl.value):null;
+  const desc=descEl?descEl.value:'';
+  const statusEl=document.getElementById('riskSaveStatus_'+col);
+  statusEl.textContent='儲存中…';
+  try{
+    const res=await fetch('/api/settings',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({col,risk_level:level||null,
+        control_nominal:isNaN(nom)||nomEl?.value===''?null:nom,
+        risk_description:desc||''})
+    });
+    const data=await res.json();
+    if(data.ok){
+      settingsData[col]={risk_level:level||null,
+        control_nominal:isNaN(nom)||nomEl?.value===''?null:nom,
+        risk_description:desc||'',updated_at:data.changed_at};
+      // Refresh audit log
+      const ar=await fetch('/api/settings').catch(()=>null);
+      if(ar&&ar.ok){const sd=await ar.json();auditLog=sd.audit_log||[];}
+      statusEl.textContent='✅ 已儲存 '+data.changed_at;
+      refresh();
+      // Rebuild risk section (audit log now updated)
+      document.getElementById('detSelect').dispatchEvent(new Event('change'));
+    } else { statusEl.textContent='❌ 儲存失敗'; }
+  }catch(e){ statusEl.textContent='❌ 儲存失敗: '+e.message; }
+}
+
+function updateIssuesCount(){
+  const n=Object.values(settingsData).filter(s=>s.risk_level==='high').length;
+  document.getElementById('tabIssues').textContent='🔴 需改善'+(n?` (${n})`:'');
+}
+
+function renderIssues(){
+  const highCols=Object.entries(settingsData).filter(([,s])=>s.risk_level==='high').map(([c])=>c).sort();
+  const ic=document.getElementById('issuesContent');
+  if(!highCols.length){
+    ic.innerHTML='<div class="alert alert-info"><div class="alert-title">目前沒有高風險點位</div><div>在「單點分析」頁面為各點位設定風險評估，高風險點位將在此集中管理。</div></div>';
+    return;
+  }
+  const fieldNames={risk_level:'風險等級',control_usl:'UCL',control_lsl:'LCL',control_nominal:'中值',risk_description:'風險說明'};
+  let html=`<div class="sec-sub" style="margin-bottom:14px">${highCols.length} 個高風險點位需要改善措施</div>`;
+  highCols.forEach(col=>{
+    const s=settingsData[col];
+    const r=computeCap(col);
+    const escCol=col.replace(/'/g,"\\'");
+    const colLogs=auditLog.filter(e=>e.col===col).slice(0,5);
+    const auditHtml=colLogs.map(e=>{
+      const ch=Object.entries(e.changes).map(([k,{from:f,to:t}])=>
+        `${fieldNames[k]||k}: ${f??'（空）'} → ${t??'（空）'}`).join(' ｜ ');
+      return `<div class="audit-entry"><span class="audit-time">${e.changed_at}</span><span class="audit-change">${ch}</span></div>`;
+    }).join('');
+    html+=`
+    <div class="issue-card">
+      <div class="issue-card-hd">
+        <span class="issue-col">🔴 ${col}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="cpk ${cpkCls(r.cpk)}">${fmt(r.cpk,2)}</span>
+          <button class="btn-sm" onclick="switchToDetail('${escCol}')">開啟分析 →</button>
+        </div>
+      </div>
+      ${s.risk_description
+        ?`<div class="issue-desc-lbl">風險說明</div><div class="issue-desc">${s.risk_description}</div>`
+        :'<div style="color:var(--g400);font-size:12px;margin-top:4px">尚未填寫風險說明，請在單點分析頁面補充</div>'}
+      ${colLogs.length?`<div class="audit-log-section" style="margin-top:10px"><div class="audit-log-title">最近變更</div>${auditHtml}</div>`:''}
+    </div>`;
+  });
+  ic.innerHTML=html;
+}
+
+function switchToDetail(col){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelector('[onclick="switchTab(\'detail\',this)"]').classList.add('on');
+  document.getElementById('panel-detail').classList.add('on');
+  document.getElementById('detSelect').value=col;
+  renderDetail();
+}
+
+// ── SPC summary page ─────────────────────────────────────────────
+function renderSPC(){
+  const el=document.getElementById('spcContent');
+  const ruleMap={};
+  for(let i=1;i<=8;i++) ruleMap[i]=[];
+  const cleanCols=[], allViolated=new Set();
+
+  const missingData=[];
+  afCols.forEach(col=>{
+    // Use precomputed cache; fall back to on-the-fly if chart hasn't loaded yet
+    if(!spcCache[col]){
+      const data=trendCache[col]; const s=statsData[col];
+      if(!data||!s||s.mean==null||!s.std||s.std<=0){missingData.push(col);return;}
+      spcCache[col]=detectSPC(data.map(d=>d.val),s.mean,s.std);
+    }
+    const {rules}=spcCache[col];
+    if(!rules.length) cleanCols.push(col);
+    else allViolated.add(col);
+    rules.forEach(r=>ruleMap[r].push(col));
+  });
+
+  const ruleFeatures=['',
+    '有 1 個點落在 ±3σ 管制界限之外（A 區之外）',
+    '連續 9 個點（或以上）落在中心線的同一側',
+    '連續 6 個點呈現持續上升或持續下降的趨勢',
+    '連續 14 個點呈現「上、下、上、下」的交替跳動',
+    '連續 3 個點中，有 2 個點落在同側 A 區（±2σ 到 ±3σ 之間）',
+    '連續 5 個點中，有 4 個點落在同側 B 區或 A 區（大於 ±1σ）',
+    '連續 15 個點都集中在中心線兩側 C 區內（±1σ 以內）',
+    '連續 8 個點落在中心線兩側，但沒有任何一點落在 C 區（±1σ 內）'
+  ];
+  const rulePredictions=['',
+    '最直接的失效警告，代表有突發的「特殊原因」介入，如設備突然故障、參數輸入錯誤、或是發生斷料等即時性異常。',
+    '製程平均值已發生實質性偏移。通常代表製程基礎條件改變，例如：更換新批次原物料、設備保養或重新校正後基準點跑掉、或作業人員更換。',
+    '預告製程正在逐漸惡化或改變。常見於工具／刀具漸進式磨損、治具逐漸鬆脫、化學槽液濃度持續衰退，或環境溫濕度正在持續變化。',
+    '製程中存在兩個以上的因素在交替影響。常見於同時使用兩套不同治具、兩個模穴交替生產，或早晚班作業人員的標準操作手法（SOP）存在差異。',
+    '製程變異變大且有極高機率即將超出管制界限。這是強烈預警訊號，暗示雖然還沒真正出界（Out of Control），但系統已處於高風險狀態。',
+    '與 R5 類似，但反映的是較小幅度但持續的偏移，系統同樣正在逐漸失去穩定性。',
+    '圖表看起來「異常穩定」，這通常不是好事。可能代表管制界限計算基準有誤（範圍抓太大）、量測設備解析度不足，或現場人員有「挑選數據」的造假行為。',
+    '資料呈現雙峰分配（Bimodal distribution）。通常因為「過度調整（Over-adjustment）」——數值偏高立刻調低、偏低立刻調高；或將兩條不同設定參數的產線數據混在一起繪製。'
+  ];
+
+  const analyzed=afCols.length-missingData.length;
+  const diagBanner=missingData.length
+    ?`<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:8px 12px;font-size:12px;color:#92400e;margin-bottom:12px">
+        ⚠ 有 ${missingData.length} 個點位尚無趨勢快取資料，分析結果不完整。請切換至「趨勢圖」頁面讓所有點位載入後再回此頁，或重新整理頁面。
+      </div>`
+    :`<div style="background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.3);border-radius:8px;padding:8px 12px;font-size:12px;color:#15803d;margin-bottom:12px">
+        ✓ 自我驗證通過：已分析全部 ${analyzed}／${afCols.length} 個 AF 點位，SPC 審查完整。
+      </div>`;
+
+  let html=diagBanner+`<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+    <div class="q-card q-red"><div class="q-val">${allViolated.size}</div><div class="q-lbl">有違規點位</div></div>
+    <div class="q-card q-good"><div class="q-val">${cleanCols.length}</div><div class="q-lbl">製程正常</div></div>
+    <div class="q-card"><div class="q-val">${afCols.length}</div><div class="q-lbl">總點位數</div></div>
+  </div>`;
+
+  for(let r=1;r<=8;r++){
+    const cols=ruleMap[r];
+    const hasViol=cols.length>0;
+    html+=`<div class="spc-rule-card" style="${hasViol?'border-left:3px solid #f59e0b':''}">
+      <div class="spc-rule-hd">
+        <span class="spc-rule-badge"${hasViol?'':' style="background:var(--g300)"'}>R${r}</span>
+        <span style="font-weight:600;font-size:14px">${SPC_LABELS[r]}</span>
+        <span style="margin-left:auto;font-size:12px;color:${hasViol?'#d97706':'var(--g400)'};font-weight:600">${cols.length} 點</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;background:var(--g50);border-radius:8px;padding:10px 12px;font-size:12px">
+        <div>
+          <div style="font-weight:700;color:var(--g700);margin-bottom:3px">特徵</div>
+          <div style="color:var(--g600);line-height:1.55">${ruleFeatures[r]}</div>
+        </div>
+        <div>
+          <div style="font-weight:700;color:#92400e;margin-bottom:3px">預測意義</div>
+          <div style="color:var(--g700);line-height:1.55">${rulePredictions[r]}</div>
+        </div>
+      </div>
+      ${hasViol
+        ?`<div style="margin-top:4px"><span style="font-size:11px;font-weight:600;color:#92400e;margin-right:6px">違規點位：</span>${cols.map(c=>`<span class="spc-col-chip" onclick="switchToDetail('${c}')">${c}</span>`).join('')}</div>`
+        :`<div class="spc-none">目前資料無此特徵 ✓</div>`
+      }
+    </div>`;
+  }
+
+  if(cleanCols.length){
+    html+=`<div class="spc-rule-card" style="border-color:rgba(22,163,74,.3)">
+      <div class="spc-rule-hd">
+        <span class="spc-rule-badge" style="background:#16a34a">✓</span>
+        <span style="font-weight:600;font-size:14px">製程正常點位</span>
+        <span style="margin-left:auto;font-size:12px;color:#16a34a;font-weight:600">${cleanCols.length} 點</span>
+      </div>
+      <div>${cleanCols.map(c=>`<span class="spc-col-chip" style="background:rgba(22,163,74,.1);color:#15803d;border-color:rgba(22,163,74,.3)" onclick="switchToDetail('${c}')">${c}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+// ── Tab switch ────────────────────────────────────────────────────
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('panel-'+id).classList.add('on');
+  if(id==='trends') renderTrends();
+  if(id==='spc') renderSPC();
+  if(id==='clarify') renderClarify();
+  if(id==='issues') renderIssues();
+  if(id==='method') renderMethod();
+}
+
+function renderMethod(){
+  const el=document.getElementById('methodContent');
+  if(el.dataset.rendered) return;
+  el.dataset.rendered='1';
+
+  const sec=(title,sub='')=>`
+    <div style="font-size:15px;font-weight:700;color:var(--g900);margin:28px 0 4px;padding-bottom:6px;border-bottom:2px solid var(--blue)">${title}</div>
+    ${sub?`<div style="font-size:12px;color:var(--g500);margin-bottom:12px">${sub}</div>`:''}`;
+
+  const card=(html,accent='var(--g200)')=>`
+    <div style="background:#fff;border:1px solid ${accent};border-left:4px solid ${accent};border-radius:10px;padding:14px 16px;margin-bottom:10px">${html}</div>`;
+
+  const formula=(f,note='')=>`
+    <div style="font-family:'Courier New',monospace;font-size:13px;background:var(--g50);border:1px solid var(--g200);border-radius:6px;padding:8px 14px;margin:6px 0;display:inline-block">${f}</div>
+    ${note?`<div style="font-size:11px;color:var(--g500);margin-top:3px">${note}</div>`:''}`;
+
+  const tbl=(headers,rows,notes=[])=>`
+    <div style="overflow-x:auto;margin:8px 0">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>${headers.map(h=>`<th style="background:var(--g100);padding:7px 10px;text-align:left;font-weight:600;color:var(--g700);border-bottom:2px solid var(--g200);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map((r,ri)=>`<tr style="background:${ri%2?'var(--g50)':'#fff'}">${r.map((c,ci)=>`<td style="padding:7px 10px;border-bottom:1px solid var(--g100);${ci===0?'font-weight:600;white-space:nowrap':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+    </table>
+    ${notes.map(n=>`<div style="font-size:11px;color:var(--g500);margin-top:4px">※ ${n}</div>`).join('')}
+    </div>`;
+
+  const badge=(txt,color,bg)=>`<span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;color:${color};background:${bg}">${txt}</span>`;
+
+  el.innerHTML=`
+
+  <!-- 1. 基本統計量 -->
+  ${sec('1　基本統計量')}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  ${card(`
+    <div style="font-weight:600;margin-bottom:6px">平均值（x̄）</div>
+    ${formula('x̄ = (x₁ + x₂ + … + xₙ) / n')}
+    <div style="font-size:12px;color:var(--g500);margin-top:6px">n 個量測值的算術平均，反映製程中心位置。</div>
+  `,'var(--g200)')}
+  ${card(`
+    <div style="font-weight:600;margin-bottom:6px">整體標準差（σ<sub>overall</sub>）</div>
+    ${formula('σ = √[ Σ(xᵢ − x̄)² / (n−1) ]')}
+    <div style="font-size:12px;color:var(--g500);margin-top:6px">全部量測值的樣本標準差（除以 n−1 = 無偏估計）。用於 <b>Pp/Ppk</b>。</div>
+  `,'var(--g200)')}
+  </div>
+
+  ${card(`
+    <div style="font-weight:600;margin-bottom:8px">組內標準差（σ<sub>within</sub>）— Pooled Within-Group Std Dev</div>
+    <div style="font-size:12px;color:var(--g500);margin-bottom:8px">本系統以 <b>每日 CSV 檔案</b>為一個子組（subgroup）。同一天量測的多台車視為同一批次，反映短期批內變異。</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        ${formula('sᵢ = √[ Σ(xᵢⱼ − x̄ᵢ)² / (nᵢ−1) ]','第 i 組的組內標準差')}
+        ${formula('σ_within = √[ Σ(nᵢ−1)·sᵢ² / Σ(nᵢ−1) ]','Pooled（加權平均）組內標準差')}
+      </div>
+      <div style="font-size:12px;color:var(--g500);line-height:1.8">
+        <b>nᵢ</b>：第 i 組的量測台數<br>
+        <b>x̄ᵢ</b>：第 i 組的組內平均<br>
+        <b>Σ(nᵢ−1)</b>：所有貢獻組的自由度總和<br><br>
+        ⚠ <b>nᵢ = 1 的組自動排除</b>（自由度為 0，無法估計組內變異）<br>
+        若所有批次均為 1 台，Cp/Cpk 無法計算。
+      </div>
+    </div>
+  `,'var(--blue)')}
+
+  <!-- 2. 製程能力指標 -->
+  ${sec('2　製程能力指標')}
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+  ${card(`
+    <div style="font-weight:700;color:var(--blue);margin-bottom:6px">Cp / Cpk — 短期製程能力（Short-term）</div>
+    <div style="font-size:12px;color:var(--g500);margin-bottom:8px">使用 <b>σ_within</b>（組內標準差），反映排除批次間漂移後的製程固有能力。</div>
+    ${formula('Cp  = (USL − LSL) / (6 · σ_within)')}
+    ${formula('CPU = (USL − x̄)  / (3 · σ_within)')}
+    ${formula('CPL = (x̄  − LSL) / (3 · σ_within)')}
+    ${formula('Cpk = min(CPU, CPL)','取偏移方向的最差值，反映製程對準度')}
+  `,'var(--blue)')}
+  ${card(`
+    <div style="font-weight:700;color:var(--g500);margin-bottom:6px">Pp / Ppk — 長期製程績效（Long-term）</div>
+    <div style="font-size:12px;color:var(--g500);margin-bottom:8px">使用 <b>σ_overall</b>（整體標準差），包含批次間漂移，反映長期實際績效。</div>
+    ${formula('Pp  = (USL − LSL) / (6 · σ_overall)')}
+    ${formula('PPU = (USL − x̄)  / (3 · σ_overall)')}
+    ${formula('PPL = (x̄  − LSL) / (3 · σ_overall)')}
+    ${formula('Ppk = min(PPU, PPL)')}
+  `,'var(--g300)')}
+  </div>
+
+  ${card(`
+    <div style="font-weight:600;margin-bottom:8px">Cp vs Pp 的關係</div>
+    <div style="font-size:12px;color:var(--g500);line-height:1.9">
+      通常 <b>Cp ≥ Pp</b>（組內變異 ≤ 整體變異）。兩者差距越大，代表批次間漂移（between-group variation）越顯著，需優先排查系統性原因（換模具、換材料、操作員差異等）。<br>
+      若 Cp ≈ Pp，代表製程變異主要來自組內，批次間穩定。
+    </div>
+  `,'var(--amber)')}
+
+  <!-- 3. 判斷標準 -->
+  ${sec('3　製程能力判斷標準')}
+  ${tbl(
+    ['等級','Cpk / Ppk 範圍','狀態','建議行動'],
+    [
+      [badge('優良','#15803d','#dcfce7'),'≥ 1.67','製程能力優秀，可考慮放寬管制','維持現狀，定期監控'],
+      [badge('良好','#1d4ed8','#dbeafe'),'1.33 ≤ Cpk < 1.67','符合一般量產要求','保持監控，預防性維護'],
+      [badge('偏低','#92400e','#fef3c7'),'1.00 ≤ Cpk < 1.33','有改善空間，需加強監控','找出變異來源，縮小偏移'],
+      [badge('不足','#991b1b','#fee2e2'),'< 1.00','製程能力不足，超差風險高','立即分析原因，考慮工程變更'],
+    ],
+    ['本系統以 Cpk（短期）作為狀態燈號的主要依據']
+  )}
+
+  <!-- 4. SPC 八大判斷準則 -->
+  ${sec('4　SPC 八大判斷準則','依 Western Electric / Nelson 規則，用於偵測製程特殊原因（Special Cause）變異')}
+  ${tbl(
+    ['規則','名稱','觸發條件','意涵'],
+    [
+      ['R1','超限','1 點落在 ±3σ 之外','特殊原因，量測值嚴重偏離'],
+      ['R2','長程偏移','連續 8 點在均值同側','製程中心漂移（系統性偏差）'],
+      ['R3','趨勢','連續 6 點單調遞增或遞減','製程持續惡化或改善中'],
+      ['R4','交替','連續 14 點交替上下','過度修正或兩個製程交替運行'],
+      ['R5','2σ 群聚','連續 3 點中有 2 點在同側 2σ 外','製程開始偏移的早期警告'],
+      ['R6','1σ 偏移','連續 5 點中有 4 點在同側 1σ 外','製程中心輕微但持續偏移'],
+      ['R7','1σ 內聚集','連續 15 點全在 ±1σ 內','過度分層或量測系統問題'],
+      ['R8','雙側遠離','連續 8 點在 ±1σ 外（兩側均有）','雙峰分布或混合製程'],
+    ],
+    ['本系統以全部歷史資料的 x̄ 和 σ_overall 作為 SPC 控制線基準']
+  )}
+
+  <!-- 5. 術語對照 -->
+  ${sec('5　術語對照表')}
+  ${tbl(
+    ['縮寫','全名','中文'],
+    [
+      ['USL','Upper Specification Limit','規格上限'],
+      ['LSL','Lower Specification Limit','規格下限'],
+      ['NOM','Nominal / Target Value','目標值（標稱值）'],
+      ['x̄','Sample Mean','樣本平均值'],
+      ['σ','Standard Deviation','標準差'],
+      ['σ_within','Within-Group (Pooled) Std Dev','組內標準差（短期變異）'],
+      ['σ_overall','Overall Sample Std Dev','整體標準差（長期變異）'],
+      ['Cp','Process Capability Index','製程能力指數（雙邊）'],
+      ['Cpk','Min Process Capability Index','製程能力指數（考慮偏移）'],
+      ['CPU / CPL','Upper / Lower Capability','單邊製程能力（上/下限）'],
+      ['Pp / Ppk','Process Performance Index','製程績效指數（長期）'],
+      ['AMX','Aperture Margin X-direction','間隙量測（X 方向）'],
+      ['AMY','Aperture Margin Y-direction','間隙量測（Y 方向）'],
+      ['AMZ','Aperture Margin Z-direction','間隙量測（Z 方向）'],
+      ['AFY','Aperture Flush Y-direction','段差量測（Y 方向）'],
+      ['AFZ','Aperture Flush Z-direction','段差量測（Z 方向）'],
+      ['SPC','Statistical Process Control','統計製程管制'],
+      ['OOS','Out Of Specification','超出規格'],
+    ]
+  )}
+
+  <!-- 6. 分組邏輯 -->
+  ${sec('6　子組定義與資料分組邏輯')}
+  ${card(`
+    <div style="font-weight:600;margin-bottom:8px">本系統的子組（Subgroup）定義</div>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13px;align-items:start">
+      <div style="font-weight:600;color:var(--blue)">子組單位</div><div>每個 CSV 檔案 = 同一天同一量測批次</div>
+      <div style="font-weight:600;color:var(--blue)">子組大小</div><div>可變（1 台 ～ 多台），依當天實際量測車輛數決定</div>
+      <div style="font-weight:600;color:var(--blue)">n = 1 的處理</div><div>單台批次無法計算組內標準差（自由度 = 0），不納入 σ_within 估計，但仍計入 Pp/Ppk（整體標準差）</div>
+      <div style="font-weight:600;color:var(--blue)">Cp/Cpk 適用條件</div><div>需至少有 <b>1 個 n ≥ 2 的批次</b>；若所有批次均為 n=1，顯示「無法估計組內σ」</div>
+    </div>
+  `,'var(--blue)')}
+  `;
+}
+</script>
+</body>
+</html>

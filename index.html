@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MF 製造品質監控平台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%);padding:28px 40px 28px;position:relative;display:flex;align-items:center;justify-content:center;min-height:110px}
+.hero-logo{position:absolute;left:40px;top:50%;transform:translateY(-50%)}
+.hero-logo img{height:52px;border-radius:3px}
+.hero-center{text-align:center}
+.hero-eyebrow{color:rgba(255,255,255,.45);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.hero-title{color:#f1f5f9;font-size:26px;font-weight:700;margin-bottom:5px}
+.hero-sub{color:rgba(255,255,255,.45);font-size:13px}
+
+/* ── Cards grid ── */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:28px 32px;max-width:1440px;margin:0 auto;width:100%}
+.card{background:#1e293b;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:22px 20px 18px;transition:all .2s;display:flex;flex-direction:column;gap:8px}
+.card:hover{background:#253347;border-color:rgba(255,255,255,.16);transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+.card-icon{font-size:34px;line-height:1}
+.card-name{color:#f1f5f9;font-size:16px;font-weight:700;margin-top:2px;line-height:1.3}
+.card-desc{color:#94a3b8;font-size:12px;line-height:1.6;flex:1}
+.card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.tag{background:rgba(59,130,246,.14);color:#93c5fd;font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid rgba(59,130,246,.22)}
+.tag-green{background:rgba(34,197,94,.12);color:#86efac;border-color:rgba(34,197,94,.25)}
+.card-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding-top:14px;margin-top:6px}
+.card-meta{color:#64748b;font-size:10px;line-height:1.4}
+.btn-enter{background:#3b82f6;color:#fff;border:none;padding:7px 18px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;transition:background .15s;white-space:nowrap}
+.btn-enter:hover{filter:brightness(1.1)}
+.footer{text-align:center;color:#334155;font-size:11px;padding:20px;margin-top:auto;border-top:1px solid rgba(255,255,255,.05)}
+
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.cards{grid-template-columns:1fr;padding:16px}.hero-logo{display:none}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-logo">
+    <img src="/Ford_logo_flat.svg" alt="Ford">
+  </div>
+  <div class="hero-center">
+    <div class="hero-eyebrow">JHONGLI CITY FLH · CX743MCA2</div>
+    <div class="hero-title">福特六和統計製程管制監控台</div>
+    <div class="hero-sub">FLH Statistical Process Control Platform</div>
+  </div>
+</div>
+
+<div class="cards">
+
+  <div class="card">
+    <div class="card-icon">🚗</div>
+    <div class="card-name">車身數據</div>
+    <div class="card-desc">整合三類車身量測數據：Margin Flush（間隙段差）、Seal Gap（密封間隙）及 CMM 座標量測（6X 總組線 / 7X 邊鈑線 / 8X 底盤線）。支援製程能力 Cp/Cpk、趨勢圖與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag">Margin Flush</span>
+      <span class="tag">Seal Gap</span>
+      <span class="tag">CMM 6X/7X/8X</span>
+      <span class="tag">SPC</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">MF / SG CSV · CMM XML</div>
+      <a class="btn-enter" href="/cmm_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🔋</div>
+    <div class="card-name">Battery Pack 品質監控</div>
+    <div class="card-desc">電池包氣密性（Pack Air Leak）與荷電狀態（SOC）監控。規格來自 QD 報告，支援趨勢圖、Cpk 與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag tag-green">Pack Air Leak</span>
+      <span class="tag tag-green">SOC</span>
+      <span class="tag">Battery Pack</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">QD CX743MCA2*.csv</div>
+      <a class="btn-enter" style="background:#16a34a" href="/battery_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🚪</div>
+    <div class="card-name">Door Closing Effort</div>
+    <div class="card-desc">四門關閉速度（FL/FR/RL/RR）監控。單邊規格，前門 USL 1.18 m/s，後門 USL 1.35 m/s。支援趨勢圖、Ppk 與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(245,158,11,.14);color:#fbbf24;border-color:rgba(245,158,11,.3)">FL@EFF</span>
+      <span class="tag" style="background:rgba(245,158,11,.14);color:#fbbf24;border-color:rgba(245,158,11,.3)">FR@EFF</span>
+      <span class="tag" style="background:rgba(245,158,11,.14);color:#fbbf24;border-color:rgba(245,158,11,.3)">RL@EFF</span>
+      <span class="tag" style="background:rgba(245,158,11,.14);color:#fbbf24;border-color:rgba(245,158,11,.3)">RR@EFF</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">QD CX743 Door Closing Effort*.csv</div>
+      <a class="btn-enter" style="background:#d97706" href="/door_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">💡</div>
+    <div class="card-name">HeadLamp Aiming 頭燈校正</div>
+    <div class="card-desc">前大燈瞄準角度（左/右燈，垂直/水平）監控。雙邊規格，支援趨勢圖、Pp/Ppk/Cpm 與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(234,179,8,.14);color:#fde047;border-color:rgba(234,179,8,.3)">Left-V</span>
+      <span class="tag" style="background:rgba(234,179,8,.14);color:#fde047;border-color:rgba(234,179,8,.3)">Left-H</span>
+      <span class="tag" style="background:rgba(234,179,8,.14);color:#fde047;border-color:rgba(234,179,8,.3)">Right-V</span>
+      <span class="tag" style="background:rgba(234,179,8,.14);color:#fde047;border-color:rgba(234,179,8,.3)">Right-H</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">QD CX743 Head lamp aiming*.csv</div>
+      <a class="btn-enter" style="background:#ca8a04" href="/headlamp_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">⚡</div>
+    <div class="card-name">VOW 靜態電流</div>
+    <div class="card-desc">整車下線靜態電流（VOW Static Current）監控，分 ICE（USL 18 mA）與 FHEV（USL 14.8 mA）兩種動力，支援趨勢圖、PPU 與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(29,78,216,.14);color:#93c5fd;border-color:rgba(29,78,216,.3)">ICE</span>
+      <span class="tag" style="background:rgba(21,128,61,.14);color:#86efac;border-color:rgba(21,128,61,.3)">FHEV</span>
+      <span class="tag" style="background:rgba(29,78,216,.14);color:#93c5fd;border-color:rgba(29,78,216,.3)">靜態電流</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">QD CX743 VOW Static Current_*.csv</div>
+      <a class="btn-enter" style="background:#1d4ed8" href="/static_current_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">🔧</div>
+    <div class="card-name">Hunter 四輪定位</div>
+    <div class="card-desc">整車下線四輪定位（Hunter Wheel Alignment）監控。涵蓋 Camber、Caster、Toe-in、Ride Height 等 20 個量測點，分 ICE / FHEV 兩種動力，支援趨勢圖、Ppk 與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(29,78,216,.14);color:#93c5fd;border-color:rgba(29,78,216,.3)">ICE</span>
+      <span class="tag" style="background:rgba(21,128,61,.14);color:#86efac;border-color:rgba(21,128,61,.3)">FHEV</span>
+      <span class="tag" style="background:rgba(139,92,246,.14);color:#c4b5fd;border-color:rgba(139,92,246,.3)">20 量測點</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">QD CX743 Hunter-*.csv</div>
+      <a class="btn-enter" style="background:#7c3aed" href="/hunter_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-icon">💨</div>
+    <div class="card-name">成車氣密監控</div>
+    <div class="card-desc">整車下線氣密測試（VOW Air Leakage）監控。單邊規格 USL 60 Pa，涵蓋 Vacuum_250Pa 與 1m try，支援趨勢圖、PPU 與 SPC 八大特徵分析。</div>
+    <div class="card-tags">
+      <span class="tag" style="background:rgba(14,165,233,.14);color:#7dd3fc;border-color:rgba(14,165,233,.3)">Vacuum_250Pa</span>
+      <span class="tag" style="background:rgba(14,165,233,.14);color:#7dd3fc;border-color:rgba(14,165,233,.3)">1m try</span>
+      <span class="tag" style="background:rgba(14,165,233,.14);color:#7dd3fc;border-color:rgba(14,165,233,.3)">VOW</span>
+    </div>
+    <div class="card-footer">
+      <div class="card-meta">QD CX743 VOW Air leakage*.csv</div>
+      <a class="btn-enter" style="background:#0284c7" href="/vow_dashboard.html">進入 →</a>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">MF Manufacturing Quality Platform · 伺服器啟動後自動載入最新 CSV · W:\MFG\public\SPC raw data</div>
+</body>
+</html>

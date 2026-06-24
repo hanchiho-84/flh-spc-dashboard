@@ -1,0 +1,19 @@
+# Production data & reports — do not commit
+*.csv
+*.CSV
+*.XML
+*.xml
+*.pdf
+*.PDF
+cmm_data.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini

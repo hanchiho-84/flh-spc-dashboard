@@ -1,0 +1,1165 @@
+{
+  "matched": {
+    "L102AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "L101AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "L103AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "L104AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "R101AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "R102AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "R103AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "R104AMY": {
+      "usl": 4.0,
+      "nom": 3.0,
+      "lsl": 2.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "HOOD – MARGIN"
+    },
+    "L102AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "L101AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "L103AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "L104AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "R101AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "R102AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "R103AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "R104AFZ": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "HOOD – FLUSH"
+    },
+    "L107AMZ": {
+      "usl": 3.7,
+      "nom": 2.7,
+      "lsl": 1.7,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER LH – MARGIN"
+    },
+    "L108AMZ": {
+      "usl": 3.7,
+      "nom": 2.7,
+      "lsl": 1.7,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER LH – MARGIN"
+    },
+    "R108AMZ": {
+      "usl": 3.7,
+      "nom": 2.7,
+      "lsl": 1.7,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER RH – MARGIN"
+    },
+    "R107AMZ": {
+      "usl": 3.7,
+      "nom": 2.7,
+      "lsl": 1.7,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER RH – MARGIN"
+    },
+    "L109AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L110AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L111AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L113AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L114AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L115AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L109AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L110AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L111AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L113AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L114AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L115AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L130AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L129AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L122AMX": {
+      "usl": 9.5,
+      "nom": 8.5,
+      "lsl": 7.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L131AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L123AMX": {
+      "usl": 9.5,
+      "nom": 8.5,
+      "lsl": 7.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L124AMX": {
+      "usl": 9.4,
+      "nom": 8.4,
+      "lsl": 7.4,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN"
+    },
+    "L130AFY": {
+      "usl": -5.6,
+      "nom": -7.0,
+      "lsl": -8.6,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L129AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L122AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L131AFY": {
+      "usl": -5.9,
+      "nom": -7.0,
+      "lsl": -8.9,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L123AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "L124AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH"
+    },
+    "R113AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R114AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R115AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R109AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R110AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R111AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R113AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R114AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R115AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R109AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R110AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R111AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R122AMX": {
+      "usl": 9.5,
+      "nom": 8.5,
+      "lsl": 7.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R129AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R130AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R123AMX": {
+      "usl": 9.5,
+      "nom": 8.5,
+      "lsl": 7.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R131AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R124AMX": {
+      "usl": 9.4,
+      "nom": 8.4,
+      "lsl": 7.4,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN"
+    },
+    "R122AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R129AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R130AFY": {
+      "usl": -5.6,
+      "nom": -7.0,
+      "lsl": -8.6,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R123AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R131AFY": {
+      "usl": -5.9,
+      "nom": -7.0,
+      "lsl": -8.9,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "R124AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH"
+    },
+    "L118AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L119AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L120AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L118AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L119AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L120AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L128AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L127AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L126AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L125AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L139AMX": {
+      "usl": 7.2,
+      "nom": 6.0,
+      "lsl": 4.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L140AMX": {
+      "usl": 7.2,
+      "nom": 6.0,
+      "lsl": 4.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN"
+    },
+    "L128AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L127AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L126AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L125AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L139AFY": {
+      "usl": -0.8,
+      "nom": -2.0,
+      "lsl": -3.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "L140AFY": {
+      "usl": -0.8,
+      "nom": -2.0,
+      "lsl": -3.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH"
+    },
+    "R118AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R119AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R120AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R118AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R119AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R120AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R125AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R126AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R127AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R128AMZ": {
+      "usl": 6.8,
+      "nom": 5.0,
+      "lsl": 3.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R139AMX": {
+      "usl": 7.2,
+      "nom": 6.0,
+      "lsl": 4.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R140AMX": {
+      "usl": 7.2,
+      "nom": 6.0,
+      "lsl": 4.8,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN"
+    },
+    "R125AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R126AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R127AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R128AFY": {
+      "usl": -5.0,
+      "nom": -7.0,
+      "lsl": -8.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R139AFY": {
+      "usl": -0.8,
+      "nom": -2.0,
+      "lsl": -3.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "R140AFY": {
+      "usl": -0.8,
+      "nom": -2.0,
+      "lsl": -3.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH"
+    },
+    "L132AMX": {
+      "usl": 8.0,
+      "nom": 8.0,
+      "lsl": 5.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "C133AMX": {
+      "usl": 8.0,
+      "nom": 8.0,
+      "lsl": 5.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "R132AMX": {
+      "usl": 8.0,
+      "nom": 8.0,
+      "lsl": 5.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "L136AMY": {
+      "usl": 4.7,
+      "nom": 3.5,
+      "lsl": 2.3,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "R136AMY": {
+      "usl": 4.7,
+      "nom": 3.5,
+      "lsl": 2.3,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "L135AMY": {
+      "usl": 4.7,
+      "nom": 3.5,
+      "lsl": 2.3,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "R135AMY": {
+      "usl": 4.7,
+      "nom": 3.5,
+      "lsl": 2.3,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "LIFTGATE – MARGIN"
+    },
+    "L132AFZ": {
+      "usl": 0.0,
+      "nom": -1.0,
+      "lsl": -2.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "C133AFZ": {
+      "usl": 0.0,
+      "nom": -1.0,
+      "lsl": -2.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "R132AFZ": {
+      "usl": 0.0,
+      "nom": -1.0,
+      "lsl": -2.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "L136AFX": {
+      "usl": 0.0,
+      "nom": -2.0,
+      "lsl": -4.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "R136AFX": {
+      "usl": 0.0,
+      "nom": -2.0,
+      "lsl": -4.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "L135AFX": {
+      "usl": 0.0,
+      "nom": -2.0,
+      "lsl": -4.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "R135AFX": {
+      "usl": 0.0,
+      "nom": -2.0,
+      "lsl": -4.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "LIFTGATE – FLUSH"
+    },
+    "L105AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER LH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "L106AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER LH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "R105AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER RH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "R106AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FENDER RH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "L105AFZ": {
+      "usl": 1.5,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FENDER LH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "L106AFZ": {
+      "usl": 1.5,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FENDER LH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "R105AFZ": {
+      "usl": 1.5,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FENDER RH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "R106AFZ": {
+      "usl": 1.5,
+      "nom": 0.0,
+      "lsl": -1.0,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FENDER RH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "L112AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "L116AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "L117AMX": {
+      "usl": 10.0,
+      "nom": 9.0,
+      "lsl": 8.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR LH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "L112AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "L116AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "L117AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -1.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR LH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "R112AMX": {
+      "usl": 5.0,
+      "nom": 4.0,
+      "lsl": 3.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "R116AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "R117AMX": {
+      "usl": 10.0,
+      "nom": 9.0,
+      "lsl": 8.0,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "FRONT DOOR RH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "R112AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "R116AFY": {
+      "usl": 1.0,
+      "nom": 0.0,
+      "lsl": -0.5,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "R117AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -1.2,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "FRONT DOOR RH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "L121AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR LH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "L121AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR LH – FLUSH",
+      "source": "BM_PIST"
+    },
+    "R121AMX": {
+      "usl": 4.5,
+      "nom": 3.5,
+      "lsl": 2.5,
+      "unit": "mm",
+      "type": "Margin 間隙",
+      "area": "REAR DOOR RH – MARGIN",
+      "source": "BM_PIST"
+    },
+    "R121AFY": {
+      "usl": 1.2,
+      "nom": 0.0,
+      "lsl": -0.7,
+      "unit": "mm",
+      "type": "Flush 段差",
+      "area": "REAR DOOR RH – FLUSH",
+      "source": "BM_PIST"
+    }
+  },
+  "unmatched": []
+}
