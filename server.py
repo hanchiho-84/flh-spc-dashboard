@@ -1097,6 +1097,10 @@ def _init_cmm_background():
             sync_cmm_files(lt)
         except Exception as e:
             print(f'CMM {lt} 初始化失敗: {e}')
+    print('=' * 60)
+    print('✅ CMM 資料同步完成（6X / 7X / 8X）')
+    print('   監控台已就緒，可以正式使用。')
+    print('=' * 60)
 
 # ── Request handler ─────────────────────────────────────────────
 class Handler(http.server.SimpleHTTPRequestHandler):
