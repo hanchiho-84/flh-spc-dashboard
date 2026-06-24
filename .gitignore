@@ -6,6 +6,8 @@
 *.pdf
 *.PDF
 cmm_data.db
+cmm_data.db-shm
+cmm_data.db-wal
 
 # Python
 __pycache__/
