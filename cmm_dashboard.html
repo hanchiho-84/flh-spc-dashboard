@@ -215,6 +215,11 @@ tr:hover td{background:var(--g50)}
         <div id="clDrop" style="display:none;position:absolute;right:0;top:calc(100% + 6px);width:360px;background:#fff;border:1px solid var(--g200);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:500;max-height:420px;overflow-y:auto;padding:14px 16px">
           <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:10px">變更紀錄</div>
           <div class="cl-list">
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">需改善頁面新增可編輯欄位：負責工程師、問題狀態（open/in work/done/completed）、問題對策可直接在卡片上修改並儲存，不需跳至單點分析；CMM 模式新增「📄 開啟報告」按鈕直接開啟 W 槽最新 PDF</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">新增 BCCP 標記：從各線 BCCP PDF 提取關鍵點位（6X 72 點、7X 46 點、8X 59 點），於製程能力總覽顯示橙色 BCCP 標籤</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">新增點位搜尋欄：製程能力總覽頂部可即時篩選點位名稱</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">CMM 同步改為增量：cmm_files 表記錄 mtime，重啟後只解析新增/異動 XML，不再全量重新解析</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">原始數據預設顯示最近 5 筆，餘下可展開；風險評估欄縮窄後緊鄰量測值分布圖</span></div>
             <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">新增 CTQ 標記：讀取各線 CTQ CMM PDF，提取關鍵量測點位（8X 545 點、7X 197 點），於製程能力總覽點位名稱旁顯示紫色 CTQ 標籤</span></div>
             <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">修正規格來源顯示：CMM 點位規格已存在但 badge 未顯示 XML✓（錯誤落入「待澄清」），加入 cmm source 判斷後正確顯示藍色 XML ✓</span></div>
             <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">讀取中遮罩改為局部顯示：切換 CMM 線別時，header 列保持可見，僅內容區域顯示藍色讀取畫面</span></div>
@@ -1357,6 +1362,56 @@ async function saveRiskSettings(col){
   }catch(e){ statusEl.textContent='❌ 儲存失敗: '+e.message; }
 }
 
+function updateIssueBadge(col){
+  const sel=document.getElementById('ist_'+col);
+  const badge=document.getElementById('ist_badge_'+col);
+  if(!sel||!badge) return;
+  const v=sel.value;
+  const statusStyle={open:'background:#fee2e2;color:#dc2626','in work':'background:#fef9c3;color:#92400e',done:'background:#dbeafe;color:#1d4ed8',completed:'background:#dcfce7;color:#15803d'};
+  const sty=statusStyle[v]||'';
+  badge.style.cssText=`font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;${sty}`;
+  badge.textContent=v;
+}
+async function saveIssueCard(col){
+  const engEl=document.getElementById('ieng_'+col);
+  const stEl=document.getElementById('ist_'+col);
+  const cmEl=document.getElementById('icm_'+col);
+  const stStatus=document.getElementById('icardStatus_'+col);
+  if(!stStatus) return;
+  const s=settingsData[col]||{};
+  stStatus.textContent='儲存中…';
+  try{
+    const res=await fetch('/api/settings',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        col,
+        risk_level: s.risk_level||'high',
+        control_nominal: s.control_nominal??null,
+        risk_description: s.risk_description||'',
+        engineer: engEl?engEl.value:'',
+        countermeasure: cmEl?cmEl.value:'',
+        issue_status: stEl?stEl.value:'open'
+      })
+    });
+    const data=await res.json();
+    if(data.ok){
+      if(!settingsData[col]) settingsData[col]={};
+      settingsData[col].engineer=engEl?engEl.value:'';
+      settingsData[col].countermeasure=cmEl?cmEl.value:'';
+      settingsData[col].issue_status=stEl?stEl.value:'open';
+      stStatus.style.color='var(--green)';
+      stStatus.textContent='✅ 已儲存';
+      setTimeout(()=>{stStatus.textContent='';},3000);
+    } else {
+      stStatus.style.color='var(--red)';
+      stStatus.textContent='❌ 失敗';
+    }
+  }catch(e){
+    stStatus.style.color='var(--red)';
+    stStatus.textContent='❌ '+e.message;
+  }
+}
 async function openReport(col,line){
   try{
     const r=await fetch(`/api/open_report?col=${encodeURIComponent(col)}&line=${encodeURIComponent(line)}`);
@@ -1394,23 +1449,40 @@ function renderIssues(){
     const ist=s.issue_status||'open';
     const istSty=statusStyle[ist]||'';
     const reportBtn=isCMM?`<button class="btn-sm" style="background:#6d28d9;border-color:#6d28d9;color:#fff" onclick="openReport('${escCol}','${cmmLine}')">📄 開啟報告</button>`:'';
+    const statusOpts=['open','in work','done','completed'].map(v=>`<option value="${v}"${ist===v?' selected':''}>${v}</option>`).join('');
     html+=`
-    <div class="issue-card">
+    <div class="issue-card" id="icard_${col}">
       <div class="issue-card-hd">
         <span class="issue-col">🔴 ${col}</span>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;${istSty}">${ist}</span>
+          <span id="ist_badge_${col}" style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;${istSty}">${ist}</span>
           <span class="cpk ${cpkCls(r.cpk)}">${fmt(r.cpk,2)}</span>
           ${reportBtn}
           <button class="btn-sm" onclick="switchToDetail('${escCol}')">開啟分析 →</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:12px">
-        <div><span style="color:var(--g500)">負責工程師：</span><b>${s.engineer||'—'}</b></div>
-        <div><span style="color:var(--g500)">問題狀態：</span><b>${ist}</b></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--g600);display:block;margin-bottom:3px">負責工程師</label>
+          <input id="ieng_${col}" type="text" value="${(s.engineer||'').replace(/"/g,'&quot;')}" placeholder="姓名"
+            style="width:100%;box-sizing:border-box;border:1px solid var(--g200);border-radius:6px;padding:5px 8px;font-size:12px">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--g600);display:block;margin-bottom:3px">問題狀態</label>
+          <select id="ist_${col}" onchange="updateIssueBadge('${escCol}')"
+            style="width:100%;box-sizing:border-box;border:1px solid var(--g200);border-radius:6px;padding:5px 8px;font-size:12px;height:30px">${statusOpts}</select>
+        </div>
       </div>
-      ${s.risk_description?`<div class="issue-desc-lbl" style="margin-top:6px">風險說明</div><div class="issue-desc">${s.risk_description}</div>`:''}
-      ${s.countermeasure?`<div class="issue-desc-lbl" style="margin-top:6px">問題對策</div><div class="issue-desc">${s.countermeasure}</div>`:''}
+      ${s.risk_description?`<div class="issue-desc-lbl" style="margin-top:8px">風險說明</div><div class="issue-desc">${s.risk_description}</div>`:''}
+      <div style="margin-top:8px">
+        <label style="font-size:11px;font-weight:600;color:var(--g600);display:block;margin-bottom:3px">問題對策</label>
+        <textarea id="icm_${col}" placeholder="改善措施、對策說明…"
+          style="width:100%;box-sizing:border-box;border:1px solid var(--g200);border-radius:6px;padding:5px 8px;font-size:12px;min-height:60px;resize:vertical">${s.countermeasure||''}</textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <button class="btn-risk-save" onclick="saveIssueCard('${escCol}')">儲存</button>
+        <span id="icardStatus_${col}" style="font-size:12px;color:var(--g500)"></span>
+      </div>
       ${colLogs.length?`<div class="audit-log-section" style="margin-top:10px"><div class="audit-log-title">最近變更</div>${auditHtml}</div>`:''}
     </div>`;
   });
@@ -1420,9 +1492,15 @@ function renderIssues(){
 function switchToDetail(col){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
-  document.querySelector('[onclick="switchTab(\'detail\',this)"]').classList.add('on');
+  const detTab=document.querySelector('.tab[data-tab="detail"]')||document.querySelector('[onclick*="switchTab"][onclick*="detail"]');
+  if(detTab) detTab.classList.add('on');
   document.getElementById('panel-detail').classList.add('on');
-  document.getElementById('detSelect').value=col;
+  const sel=document.getElementById('detSelect');
+  if(![...sel.options].some(o=>o.value===col)){
+    const o=document.createElement('option');
+    o.value=col; o.textContent=col; sel.appendChild(o);
+  }
+  sel.value=col;
   renderDetail();
 }
 
