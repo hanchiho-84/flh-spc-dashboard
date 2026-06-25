@@ -201,6 +201,7 @@ def init_db():
             "ALTER TABLE point_settings ADD COLUMN engineer TEXT DEFAULT ''",
             "ALTER TABLE point_settings ADD COLUMN countermeasure TEXT DEFAULT ''",
             "ALTER TABLE point_settings ADD COLUMN issue_status TEXT DEFAULT 'open'",
+            "ALTER TABLE point_settings ADD COLUMN follow_up_date TEXT DEFAULT ''",
         ]:
             try:
                 c.execute(_sql)
@@ -1252,7 +1253,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif path == '/api/settings':
             with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 s_rows = conn.execute(
-                    'SELECT col, risk_level, control_usl, control_lsl, control_nominal, risk_description, updated_at, engineer, countermeasure, issue_status FROM point_settings'
+                    'SELECT col, risk_level, control_usl, control_lsl, control_nominal, risk_description, updated_at, engineer, countermeasure, issue_status, follow_up_date FROM point_settings'
                 ).fetchall()
                 a_rows = conn.execute(
                     'SELECT col, changed_at, changes FROM audit_log ORDER BY changed_at DESC'
@@ -1260,7 +1261,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             settings  = {r[0]: {'risk_level': r[1], 'control_usl': r[2], 'control_lsl': r[3],
                                  'control_nominal': r[4], 'risk_description': r[5], 'updated_at': r[6],
                                  'engineer': r[7] or '', 'countermeasure': r[8] or '',
-                                 'issue_status': r[9] or 'open'} for r in s_rows}
+                                 'issue_status': r[9] or 'open', 'follow_up_date': r[10] or ''} for r in s_rows}
             audit_log = [{'col': r[0], 'changed_at': r[1], 'changes': json.loads(r[2])} for r in a_rows]
             send_json(self, {'settings': settings, 'audit_log': audit_log})
 
@@ -1559,14 +1560,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         with sqlite3.connect(DB_FILE, timeout=30) as conn:
             row = conn.execute(
-                'SELECT risk_level, control_usl, control_lsl, control_nominal, risk_description, engineer, countermeasure, issue_status FROM point_settings WHERE col=?', (col,)
+                'SELECT risk_level, control_usl, control_lsl, control_nominal, risk_description, engineer, countermeasure, issue_status, follow_up_date FROM point_settings WHERE col=?', (col,)
             ).fetchone()
             old = {'risk_level': row[0], 'control_usl': row[1], 'control_lsl': row[2],
                    'control_nominal': row[3], 'risk_description': row[4],
                    'engineer': row[5] or '', 'countermeasure': row[6] or '',
-                   'issue_status': row[7] or 'open'} if row else \
+                   'issue_status': row[7] or 'open', 'follow_up_date': row[8] or ''} if row else \
                   {'risk_level': None, 'control_usl': None, 'control_lsl': None, 'control_nominal': None,
-                   'risk_description': None, 'engineer': '', 'countermeasure': '', 'issue_status': 'open'}
+                   'risk_description': None, 'engineer': '', 'countermeasure': '', 'issue_status': 'open',
+                   'follow_up_date': ''}
 
             new_risk  = body.get('risk_level') or None
             new_usl   = body.get('control_usl')
@@ -1576,19 +1578,21 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             new_eng   = body.get('engineer', '') or ''
             new_cm    = body.get('countermeasure', '') or ''
             new_status= body.get('issue_status', 'open') or 'open'
+            new_fud   = body.get('follow_up_date', '') or ''
 
             changes = {}
             for k, nv in [('risk_level', new_risk), ('control_usl', new_usl),
                           ('control_lsl', new_lsl), ('control_nominal', new_nom),
                           ('risk_description', new_desc), ('engineer', new_eng),
-                          ('countermeasure', new_cm), ('issue_status', new_status)]:
+                          ('countermeasure', new_cm), ('issue_status', new_status),
+                          ('follow_up_date', new_fud)]:
                 if old[k] != nv:
                     changes[k] = {'from': old[k], 'to': nv}
 
             now = datetime.now().isoformat(timespec='seconds')
             conn.execute(
-                'INSERT OR REPLACE INTO point_settings (col,risk_level,control_usl,control_lsl,control_nominal,risk_description,updated_at,engineer,countermeasure,issue_status) VALUES (?,?,?,?,?,?,?,?,?,?)',
-                (col, new_risk, new_usl, new_lsl, new_nom, new_desc, now, new_eng, new_cm, new_status)
+                'INSERT OR REPLACE INTO point_settings (col,risk_level,control_usl,control_lsl,control_nominal,risk_description,updated_at,engineer,countermeasure,issue_status,follow_up_date) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                (col, new_risk, new_usl, new_lsl, new_nom, new_desc, now, new_eng, new_cm, new_status, new_fud)
             )
             if changes:
                 conn.execute('INSERT INTO audit_log (col,changed_at,changes) VALUES (?,?,?)',

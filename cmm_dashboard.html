@@ -1381,6 +1381,7 @@ async function saveIssueCard(col){
   const engEl=document.getElementById('ieng_'+col);
   const stEl=document.getElementById('ist_'+col);
   const cmEl=document.getElementById('icm_'+col);
+  const fudEl=document.getElementById('ifud_'+col);
   const stStatus=document.getElementById('icardStatus_'+col);
   if(!stStatus) return;
   const s=settingsData[col]||{};
@@ -1396,7 +1397,8 @@ async function saveIssueCard(col){
         risk_description: s.risk_description||'',
         engineer: engEl?engEl.value:'',
         countermeasure: cmEl?cmEl.value:'',
-        issue_status: stEl?stEl.value:'open'
+        issue_status: stEl?stEl.value:'open',
+        follow_up_date: fudEl?fudEl.value:''
       })
     });
     const data=await res.json();
@@ -1405,6 +1407,7 @@ async function saveIssueCard(col){
       settingsData[col].engineer=engEl?engEl.value:'';
       settingsData[col].countermeasure=cmEl?cmEl.value:'';
       settingsData[col].issue_status=stEl?stEl.value:'open';
+      settingsData[col].follow_up_date=fudEl?fudEl.value:'';
       stStatus.style.color='var(--green)';
       stStatus.textContent='✅ 已儲存';
       setTimeout(()=>{stStatus.textContent='';},3000);
@@ -1489,7 +1492,7 @@ function renderIssues(){
           <button class="btn-sm" style="background:#fff;border-color:#dc2626;color:#dc2626" onclick="deleteIssue('${escCol}')">🗑 刪除</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
         <div>
           <label style="font-size:11px;font-weight:600;color:var(--g600);display:block;margin-bottom:3px">負責工程師</label>
           <input id="ieng_${col}" type="text" value="${(s.engineer||'').replace(/"/g,'&quot;')}" placeholder="姓名"
@@ -1499,6 +1502,11 @@ function renderIssues(){
           <label style="font-size:11px;font-weight:600;color:var(--g600);display:block;margin-bottom:3px">問題狀態</label>
           <select id="ist_${col}" onchange="updateIssueBadge('${escCol}')"
             style="width:100%;box-sizing:border-box;border:1px solid var(--g200);border-radius:6px;padding:5px 8px;font-size:12px;height:30px">${statusOpts}</select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--g600);display:block;margin-bottom:3px">下次追蹤日期</label>
+          <input id="ifud_${col}" type="date" value="${s.follow_up_date||''}"
+            style="width:100%;box-sizing:border-box;border:1px solid var(--g200);border-radius:6px;padding:5px 8px;font-size:12px">
         </div>
       </div>
       ${s.risk_description?`<div class="issue-desc-lbl" style="margin-top:8px">風險說明</div><div class="issue-desc">${s.risk_description}</div>`:''}
