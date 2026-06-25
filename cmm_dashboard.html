@@ -1107,10 +1107,12 @@ async function renderDetail(){
     const statusMap={'cg':['s-g','✅ 製程能力良好 (Cpk ≥ 1.33)'],'ca':['s-a','⚠️ 製程能力偏低，建議改善'],'cr':['s-b','❌ 製程能力不足 (Cpk < 1.0)'],'cn':['s-n','— 樣本不足']};
     const [sc,st]=statusMap[cpkWCls];  // status badge driven by true Cpk
     const outOfSpec=data.filter(d=>d.val!==null&&(d.val>usl||d.val<lsl)).length;
-    const rawRows=[...data].sort((a,b)=>_parseDate(b.date)-_parseDate(a.date)).map(d=>{
-      const oos=d.val!==null&&(d.val>usl||d.val<lsl);
-      return `<tr><td>${d.serial_no||''}</td><td>${d.date||''}</td><td style="text-align:right;color:${oos?'#dc2626':'inherit'};font-weight:${oos?700:400}">${d.val!==null?d.val.toFixed(4):'—'}</td></tr>`;
-    }).join('');
+    const _rawSorted=[...data].sort((a,b)=>_parseDate(b.date)-_parseDate(a.date));
+    const _rawToRow=d=>{const oos=d.val!==null&&(d.val>usl||d.val<lsl);return`<tr><td>${d.serial_no||''}</td><td>${d.date||''}</td><td style="text-align:right;color:${oos?'#dc2626':'inherit'};font-weight:${oos?700:400}">${d.val!==null?d.val.toFixed(4):'—'}</td></tr>`;};
+    const rawRowsTop=_rawSorted.slice(0,5).map(_rawToRow).join('');
+    const rawRowsExtra=_rawSorted.slice(5).map(_rawToRow).join('');
+    const rawExtra=rawRowsExtra?`<tbody id="rawExtra" style="display:none">${rawRowsExtra}</tbody><tfoot><tr><td colspan="3" style="padding:4px 0;text-align:center"><button onclick="const e=document.getElementById('rawExtra');const show=e.style.display==='none';e.style.display=show?'':'none';this.textContent=show?'▲ 收合':'▼ 展開更多（${_rawSorted.length-5} 筆）'" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;padding:4px 8px">▼ 展開更多（${_rawSorted.length-5} 筆）</button></td></tr></tfoot>`:'';
+    const rawRows=rawRowsTop;
 
     const specSrcHtml=spec.source==='pdf'
       ?`<div class="sr"><span class="sr-l">規格來源</span><span class="sr-v" style="color:#15803d">PDF ✓ (${spec.pdf_point||''})</span></div>`
@@ -1154,6 +1156,7 @@ async function renderDetail(){
             <th style="background:var(--g50);padding:5px 8px;text-align:right;font-weight:600;color:var(--g700);border-bottom:1px solid var(--g200)">量測值</th>
           </tr></thead>
           <tbody>${rawRows}</tbody>
+          ${rawExtra}
         </table>
       </div>`;
 
