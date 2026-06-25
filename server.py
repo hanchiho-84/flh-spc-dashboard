@@ -1280,7 +1280,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 base = os.path.join(BIW_REPORT, sub)
                 for root, _, files in os.walk(base):
                     for fn in files:
-                        if fn.lower().endswith('.pdf'):
+                        fn_l = fn.lower()
+                        if fn_l.endswith('.pdf') and 'pist' not in fn_l:
                             fp = os.path.join(root, fn)
                             mt = os.path.getmtime(fp)
                             if mt > best_t:
