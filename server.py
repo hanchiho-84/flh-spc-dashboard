@@ -1217,11 +1217,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             mode = params.get('mode', ['mf'])[0]
             line = params.get('line', ['6x'])[0]
             if mode == 'cmm':
+                ctq_file = os.path.join(FOLDER, 'cmm_ctq.json')
+                ctq_set = set()
+                if os.path.exists(ctq_file):
+                    with open(ctq_file, encoding='utf-8') as f:
+                        ctq_set = set(json.load(f).get(line, []))
                 with sqlite3.connect(DB_FILE, timeout=30) as conn:
                     rows = conn.execute(
                         'SELECT col, usl, lsl FROM cmm_specs WHERE line_type=?', (line,)
                     ).fetchall()
-                matched = {col: {'usl': usl, 'lsl': lsl, 'nom': 0, 'unit': 'mm', 'type': 'CMM', 'area': ''}
+                matched = {col: {'usl': usl, 'lsl': lsl, 'nom': 0, 'unit': 'mm', 'type': 'CMM', 'area': '', 'is_ctq': col in ctq_set}
                            for col, usl, lsl in rows}
                 send_json(self, {'matched': matched, 'unmatched': []})
             else:
