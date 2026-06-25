@@ -339,6 +339,7 @@ tr:hover td{background:var(--g50)}
               <th onclick="sortTable(9)">Cp ↕</th>
               <th onclick="sortTable(10)">Cpk ↕</th>
               <th>風險</th>
+              <th>改善狀態</th>
             </tr></thead>
             <tbody id="sumBody"></tbody>
           </table>
@@ -850,11 +851,15 @@ function applySort(){
     const isBccp=specsData.matched?.[d.col]?.is_bccp||false;
     const ctqTag=isCtq?'<span class="ctq-badge">CTQ</span>':'';
     const bccpTag=isBccp?'<span class="bccp-badge">BCCP</span>':'';
+    const issueStatusMap={'open':'已開案，暫無對策','in work':'改善進行中','done':'對策完成，觀察中','completed':'改善完成'};
+    const issueStatusStyle={'open':'color:#dc2626','in work':'color:#92400e','done':'color:#1d4ed8','completed':'color:#15803d'};
+    const ist=rl==='high'?(rs?.issue_status||'open'):null;
+    const istCell=ist?`<span style="font-size:11px;font-weight:600;${issueStatusStyle[ist]||''}">${issueStatusMap[ist]||''}</span>`:'';
     const tr=document.createElement('tr');
     tr.style.cursor='pointer';
     tr.title='點擊開啟單點分析';
     tr.onclick=()=>switchToDetail(d.col);
-    tr.innerHTML=`<td><b>${d.col}</b>${ctqTag}${bccpTag}</td><td style="font-size:11px;color:var(--g500);max-width:160px;white-space:normal;line-height:1.3">${area||'—'}</td><td>${badge}</td><td>${fmt(d.usl,2)}</td><td>${fmt(d.lsl,2)}</td><td>${d.n}</td><td>${fmt(d.mean)}</td><td>${fmt(d.std)}</td><td>${fmt(d.min)}</td><td>${fmt(d.max)}</td><td><span class="cpk ${cpkCls(d.cp)}">${fmt(d.cp,2)}</span></td><td><span class="cpk ${cpkCls(d.cpk)}">${fmt(d.cpk,2)}</span></td><td><span class="risk-dot ${dotCls}" title="${dotTitle}"></span></td>`;
+    tr.innerHTML=`<td><b>${d.col}</b>${ctqTag}${bccpTag}</td><td style="font-size:11px;color:var(--g500);max-width:160px;white-space:normal;line-height:1.3">${area||'—'}</td><td>${badge}</td><td>${fmt(d.usl,2)}</td><td>${fmt(d.lsl,2)}</td><td>${d.n}</td><td>${fmt(d.mean)}</td><td>${fmt(d.std)}</td><td>${fmt(d.min)}</td><td>${fmt(d.max)}</td><td><span class="cpk ${cpkCls(d.cp)}">${fmt(d.cp,2)}</span></td><td><span class="cpk ${cpkCls(d.cpk)}">${fmt(d.cpk,2)}</span></td><td><span class="risk-dot ${dotCls}" title="${dotTitle}"></span></td><td>${istCell}</td>`;
     tb.appendChild(tr);
   });
 }
