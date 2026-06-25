@@ -214,6 +214,11 @@ tr:hover td{background:var(--g50)}
         <div id="clDrop" style="display:none;position:absolute;right:0;top:calc(100% + 6px);width:360px;background:#fff;border:1px solid var(--g200);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.12);z-index:500;max-height:420px;overflow-y:auto;padding:14px 16px">
           <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:10px">變更紀錄</div>
           <div class="cl-list">
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">新增 CTQ 標記：讀取各線 CTQ CMM PDF，提取關鍵量測點位（8X 545 點、7X 197 點），於製程能力總覽點位名稱旁顯示紫色 CTQ 標籤</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">修正規格來源顯示：CMM 點位規格已存在但 badge 未顯示 XML✓（錯誤落入「待澄清」），加入 cmm source 判斷後正確顯示藍色 XML ✓</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">讀取中遮罩改為局部顯示：切換 CMM 線別時，header 列保持可見，僅內容區域顯示藍色讀取畫面</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">CMM 同步完成通知：背景 XML 初始化（6X→7X→8X）全部完成後，terminal 顯示完成橫幅提示使用者可正式使用</span></div>
+            <div class="cl-item"><span class="cl-date">2026-06-25</span><span class="cl-desc">修正 SQLite 鎖定問題：啟用 WAL 模式（journal_mode=WAL）並對所有連線加 timeout=30s，防止 CMM 背景 sync 期間其他 dashboard 讀取失敗導致趨勢圖空白</span></div>
             <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">新增 CMM 模式（6X 總組線 / 7X 邊鈑線 / 8X 底盤線）：讀取 PC-DMIS XML 檔，差值（measured−nominal）作為監控值，規格（USL/LSL）直接從 XML 提取；伺服器背景執行初始化，首次啟動完成後後續均快速載入；XML 規格來源以「XML✓」標示</span></div>
             <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">新增 Seal Gap（SG）模式：標題列加入 Margin Flush / Seal Gap 切換按鈕，點擊即載入各自資料集（CSV 檔名含 SG 者），規格從 sg_specs.json 讀取；所有子頁籤（製程能力總覽、趨勢圖、單點分析、待澄清、統計方法）均支援 SG 模式</span></div>
             <div class="cl-item"><span class="cl-date">2026-06-24</span><span class="cl-desc">標題簡化為「BIW 車身數據」；Margin Flush / Seal Gap 切換按鈕移至標題旁（左側），右側保留筆數與點位數徽章</span></div>
