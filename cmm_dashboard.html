@@ -1104,7 +1104,17 @@ async function renderDetail(){
       _sumDF+=gVals.length-1;
       _nSub++;
     }
-    const sigmaW=_sumDF>0?Math.sqrt(_sumSqDev/_sumDF):null;
+    let sigmaW=_sumDF>0?Math.sqrt(_sumSqDev/_sumDF):null;
+    // Fallback for all-n=1 subgroups: use Moving Range method (IMR chart, d2=1.128)
+    if(!sigmaW){
+      const _sorted=[...data].filter(d=>d.val!==null).sort((a,b)=>_parseDate(a.date)-_parseDate(b.date));
+      if(_sorted.length>=2){
+        let _mrSum=0;
+        for(let i=1;i<_sorted.length;i++) _mrSum+=Math.abs(_sorted[i].val-_sorted[i-1].val);
+        const _mrBar=_mrSum/(_sorted.length-1);
+        sigmaW=_mrBar/1.128;
+      }
+    }
     let cp_w=null,cpk_w=null,cpu_w=null,cpl_w=null;
     if(sigmaW&&sigmaW>0&&r.mean!==null){
       cp_w=(usl-lsl)/(6*sigmaW);
