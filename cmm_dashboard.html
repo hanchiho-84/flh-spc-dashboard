@@ -1417,6 +1417,28 @@ async function saveIssueCard(col){
     stStatus.textContent='❌ '+e.message;
   }
 }
+async function deleteIssue(col){
+  if(!confirm(`確定要刪除「${col}」的高風險設定？\n該點位將從需改善清單移除，其他設定保留。`)) return;
+  const s=settingsData[col]||{};
+  try{
+    const res=await fetch('/api/settings',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({col, risk_level:null,
+        control_nominal:s.control_nominal??null,
+        risk_description:s.risk_description||'',
+        engineer:s.engineer||'', countermeasure:s.countermeasure||'',
+        issue_status:s.issue_status||'open'})
+    });
+    const data=await res.json();
+    if(data.ok){
+      if(settingsData[col]) settingsData[col].risk_level=null;
+      renderIssues();
+      updateIssuesCount();
+      applySort();
+    }
+  }catch(e){ alert('刪除失敗: '+e.message); }
+}
 async function openReport(col,line){
   try{
     const r=await fetch(`/api/open_report?col=${encodeURIComponent(col)}&line=${encodeURIComponent(line)}`);
@@ -1464,6 +1486,7 @@ function renderIssues(){
           <span class="cpk ${cpkCls(r.cpk)}">${fmt(r.cpk,2)}</span>
           ${reportBtn}
           <button class="btn-sm" onclick="switchToDetail('${escCol}')">開啟分析 →</button>
+          <button class="btn-sm" style="background:#fff;border-color:#dc2626;color:#dc2626" onclick="deleteIssue('${escCol}')">🗑 刪除</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
