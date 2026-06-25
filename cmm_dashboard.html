@@ -94,7 +94,7 @@ tr:hover td{background:var(--g50)}
 .cg{background:var(--green-lt);color:#15803d}.ca{background:var(--amber-lt);color:#92400e}
 .cr{background:var(--red-lt);color:#991b1b}.cn{background:var(--g100);color:var(--g500)}
 .spec-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;display:inline-block}
-.spec-pdf{background:var(--green-lt);color:#15803d}.spec-global{background:var(--g100);color:var(--g500)}.spec-control{background:#fef9c3;color:#854d0e}
+.spec-pdf{background:var(--green-lt);color:#15803d}.spec-cmm{background:var(--blue-lt);color:#1d4ed8}.spec-global{background:var(--g100);color:var(--g500)}.spec-control{background:#fef9c3;color:#854d0e}
 .risk-card{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:16px;margin-top:14px}
 .risk-card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);margin-bottom:12px}
 .risk-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
@@ -804,6 +804,8 @@ function applySort(){
   s.forEach(d=>{
     const badge=d.specSource==='pdf'
       ?'<span class="spec-badge spec-pdf">PDF ✓</span>'
+      :d.specSource==='cmm'
+      ?'<span class="spec-badge spec-cmm">XML ✓</span>'
       :d.specSource==='control'
       ?'<span class="spec-badge spec-control">管制值</span>'
       :'<span class="spec-badge spec-global">待澄清</span>';
