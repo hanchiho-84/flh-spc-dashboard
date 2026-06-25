@@ -312,6 +312,11 @@ tr:hover td{background:var(--g50)}
       <div class="panel on" id="panel-summary">
         <div class="sec-title"><span id="summaryModeTitle">MF 點位製程能力</span><span id="filterBadge"></span></div>
         <div class="sec-sub" id="sumSub"></div>
+        <div style="margin-bottom:8px">
+          <input id="sumSearch" type="text" placeholder="🔍 搜尋點位名稱…" oninput="filterSumTable(this.value)"
+            style="width:260px;padding:6px 10px;border:1px solid var(--g200);border-radius:6px;font-size:13px;outline:none;background:var(--g50)">
+          <span id="sumSearchCount" style="font-size:11px;color:var(--g400);margin-left:8px"></span>
+        </div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
@@ -791,6 +796,19 @@ function setCpkFilter(type){
 
 // ── Summary Table ────────────────────────────────────────────────
 function sortTable(col){sortCol===col?sortDir*=-1:(sortDir=1,sortCol=col);applySort();}
+function filterSumTable(q){
+  const kw=q.trim().toLowerCase();
+  const rows=document.querySelectorAll('#sumBody tr');
+  let vis=0;
+  rows.forEach(tr=>{
+    const col=tr.querySelector('td b')?.textContent.toLowerCase()||'';
+    const show=!kw||col.includes(kw);
+    tr.style.display=show?'':'none';
+    if(show) vis++;
+  });
+  const el=document.getElementById('sumSearchCount');
+  if(el) el.textContent=kw?`${vis} 筆結果`:'';
+}
 function applySort(){
   const keys=['col','specSource','usl','lsl','n','mean','std','min','max','cp','cpk'];
   const filterFn={
