@@ -1044,6 +1044,12 @@ def sync_cmm_files(line_type):
         xml_files.extend(glob.glob(os.path.join(W_XML_FOLDER, pat)))
     xml_files = sorted(set(xml_files))
 
+    # Pre-load mtimes from DB so already-parsed files are skipped after restart
+    if not _cmm_mtimes[line_type]:
+        with sqlite3.connect(DB_FILE, timeout=30) as _c:
+            _cmm_mtimes[line_type] = {r[0]: r[1] for r in _c.execute(
+                'SELECT filename, mtime FROM cmm_files WHERE line_type=?', (line_type,))}
+
     cached_mtimes = _cmm_mtimes[line_type]
     # Fast path: all files already parsed
     if _cmm_ready[line_type] and len(xml_files) == len(_cmm_files_cache[line_type]):
