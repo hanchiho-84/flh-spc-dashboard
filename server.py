@@ -195,11 +195,17 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_col  ON measurements(col);
             CREATE INDEX IF NOT EXISTS idx_date ON car_rows(date);
         ''')
-        # Migrate: add control_nominal if missing (existing databases)
-        try:
-            c.execute('ALTER TABLE point_settings ADD COLUMN control_nominal REAL')
-        except Exception:
-            pass
+        # Migrate: add columns if missing (existing databases)
+        for _sql in [
+            'ALTER TABLE point_settings ADD COLUMN control_nominal REAL',
+            "ALTER TABLE point_settings ADD COLUMN engineer TEXT DEFAULT ''",
+            "ALTER TABLE point_settings ADD COLUMN countermeasure TEXT DEFAULT ''",
+            "ALTER TABLE point_settings ADD COLUMN issue_status TEXT DEFAULT 'open'",
+        ]:
+            try:
+                c.execute(_sql)
+            except Exception:
+                pass
         c.executescript('''
             CREATE TABLE IF NOT EXISTS battery_files (
                 filename TEXT PRIMARY KEY, mtime REAL NOT NULL
@@ -1246,15 +1252,44 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         elif path == '/api/settings':
             with sqlite3.connect(DB_FILE, timeout=30) as conn:
                 s_rows = conn.execute(
-                    'SELECT col, risk_level, control_usl, control_lsl, control_nominal, risk_description, updated_at FROM point_settings'
+                    'SELECT col, risk_level, control_usl, control_lsl, control_nominal, risk_description, updated_at, engineer, countermeasure, issue_status FROM point_settings'
                 ).fetchall()
                 a_rows = conn.execute(
                     'SELECT col, changed_at, changes FROM audit_log ORDER BY changed_at DESC'
                 ).fetchall()
             settings  = {r[0]: {'risk_level': r[1], 'control_usl': r[2], 'control_lsl': r[3],
-                                 'control_nominal': r[4], 'risk_description': r[5], 'updated_at': r[6]} for r in s_rows}
+                                 'control_nominal': r[4], 'risk_description': r[5], 'updated_at': r[6],
+                                 'engineer': r[7] or '', 'countermeasure': r[8] or '',
+                                 'issue_status': r[9] or 'open'} for r in s_rows}
             audit_log = [{'col': r[0], 'changed_at': r[1], 'changes': json.loads(r[2])} for r in a_rows]
             send_json(self, {'settings': settings, 'audit_log': audit_log})
+
+        # ── /api/open_report ────────────────────────────────────────
+        elif path == '/api/open_report':
+            col  = params.get('col', [''])[0]
+            line = params.get('line', [''])[0]
+            if not line and col:
+                with sqlite3.connect(DB_FILE, timeout=30) as _c:
+                    r = _c.execute('SELECT line_type FROM cmm_specs WHERE col=? LIMIT 1', (col,)).fetchone()
+                    line = r[0] if r else ''
+            BIW_REPORT = r'W:\MFG\public\SPC report\BIW'
+            folders = {'6x': ['6X'], '7x': ['7XL', '7XR'], '8x': ['8X']}.get(line, [])
+            best, best_t = None, 0
+            for sub in folders:
+                base = os.path.join(BIW_REPORT, sub)
+                for root, _, files in os.walk(base):
+                    for fn in files:
+                        if fn.lower().endswith('.pdf'):
+                            fp = os.path.join(root, fn)
+                            mt = os.path.getmtime(fp)
+                            if mt > best_t:
+                                best_t, best = mt, fp
+            if best:
+                import subprocess
+                subprocess.Popen(['explorer', best])
+                send_json(self, {'ok': True, 'path': best})
+            else:
+                send_json(self, {'ok': False, 'error': 'No PDF found'})
 
         # ── /api/battery/* ──────────────────────────────────────────
         elif path == '/api/battery/specs':
@@ -1524,29 +1559,36 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         with sqlite3.connect(DB_FILE, timeout=30) as conn:
             row = conn.execute(
-                'SELECT risk_level, control_usl, control_lsl, control_nominal, risk_description FROM point_settings WHERE col=?', (col,)
+                'SELECT risk_level, control_usl, control_lsl, control_nominal, risk_description, engineer, countermeasure, issue_status FROM point_settings WHERE col=?', (col,)
             ).fetchone()
-            old = {'risk_level': row[0], 'control_usl': row[1],
-                   'control_lsl': row[2], 'control_nominal': row[3], 'risk_description': row[4]} if row else \
-                  {'risk_level': None, 'control_usl': None, 'control_lsl': None, 'control_nominal': None, 'risk_description': None}
+            old = {'risk_level': row[0], 'control_usl': row[1], 'control_lsl': row[2],
+                   'control_nominal': row[3], 'risk_description': row[4],
+                   'engineer': row[5] or '', 'countermeasure': row[6] or '',
+                   'issue_status': row[7] or 'open'} if row else \
+                  {'risk_level': None, 'control_usl': None, 'control_lsl': None, 'control_nominal': None,
+                   'risk_description': None, 'engineer': '', 'countermeasure': '', 'issue_status': 'open'}
 
-            new_risk = body.get('risk_level') or None
-            new_usl  = body.get('control_usl')
-            new_lsl  = body.get('control_lsl')
-            new_nom  = body.get('control_nominal')
-            new_desc = body.get('risk_description', '') or ''
+            new_risk  = body.get('risk_level') or None
+            new_usl   = body.get('control_usl')
+            new_lsl   = body.get('control_lsl')
+            new_nom   = body.get('control_nominal')
+            new_desc  = body.get('risk_description', '') or ''
+            new_eng   = body.get('engineer', '') or ''
+            new_cm    = body.get('countermeasure', '') or ''
+            new_status= body.get('issue_status', 'open') or 'open'
 
             changes = {}
             for k, nv in [('risk_level', new_risk), ('control_usl', new_usl),
                           ('control_lsl', new_lsl), ('control_nominal', new_nom),
-                          ('risk_description', new_desc)]:
+                          ('risk_description', new_desc), ('engineer', new_eng),
+                          ('countermeasure', new_cm), ('issue_status', new_status)]:
                 if old[k] != nv:
                     changes[k] = {'from': old[k], 'to': nv}
 
             now = datetime.now().isoformat(timespec='seconds')
             conn.execute(
-                'INSERT OR REPLACE INTO point_settings (col,risk_level,control_usl,control_lsl,control_nominal,risk_description,updated_at) VALUES (?,?,?,?,?,?,?)',
-                (col, new_risk, new_usl, new_lsl, new_nom, new_desc, now)
+                'INSERT OR REPLACE INTO point_settings (col,risk_level,control_usl,control_lsl,control_nominal,risk_description,updated_at,engineer,countermeasure,issue_status) VALUES (?,?,?,?,?,?,?,?,?,?)',
+                (col, new_risk, new_usl, new_lsl, new_nom, new_desc, now, new_eng, new_cm, new_status)
             )
             if changes:
                 conn.execute('INSERT INTO audit_log (col,changed_at,changes) VALUES (?,?,?)',

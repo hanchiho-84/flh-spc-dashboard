@@ -1226,6 +1226,22 @@ async function renderDetail(){
           <label>品質風險說明</label>
           <textarea class="risk-textarea" id="riskDesc_${col}" placeholder="描述此點位可能造成的品質問題，如：影響門縫均勻性，導致客戶感知不良…">${rDesc}</textarea>
         </div>
+        <div class="risk-extra" style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px">
+            <label style="font-size:11px;font-weight:600;color:var(--g700);display:block;margin-bottom:4px">負責工程師</label>
+            <input class="risk-input" id="riskEng_${col}" type="text" value="${rs.engineer||''}" placeholder="姓名">
+          </div>
+          <div style="flex:1;min-width:140px">
+            <label style="font-size:11px;font-weight:600;color:var(--g700);display:block;margin-bottom:4px">問題狀態</label>
+            <select class="risk-input" id="riskStatus_${col}" style="width:100%;height:32px">
+              ${['open','in work','done','completed'].map(v=>`<option value="${v}"${(rs.issue_status||'open')===v?' selected':''}>${v}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="risk-extra" style="margin-top:6px">
+          <label style="font-size:11px;font-weight:600;color:var(--g700);display:block;margin-bottom:4px">問題對策</label>
+          <textarea class="risk-textarea" id="riskCM_${col}" placeholder="改善措施、對策說明…" style="min-height:60px">${rs.countermeasure||''}</textarea>
+        </div>
       </div>
       <div class="risk-save-row">
         <button class="btn-risk-save" onclick="saveRiskSettings('${escCol}')">儲存設定</button>
@@ -1304,8 +1320,14 @@ async function saveRiskSettings(col){
   const level=[...radios].find(r=>r.checked)?.value||null;
   const nomEl=document.getElementById('riskNom_'+col);
   const descEl=document.getElementById('riskDesc_'+col);
+  const engEl=document.getElementById('riskEng_'+col);
+  const cmEl=document.getElementById('riskCM_'+col);
+  const stEl=document.getElementById('riskStatus_'+col);
   const nom=nomEl?parseFloat(nomEl.value):null;
   const desc=descEl?descEl.value:'';
+  const eng=engEl?engEl.value:'';
+  const cm=cmEl?cmEl.value:'';
+  const ist=stEl?stEl.value:'open';
   const statusEl=document.getElementById('riskSaveStatus_'+col);
   statusEl.textContent='儲存中…';
   try{
@@ -1314,13 +1336,16 @@ async function saveRiskSettings(col){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({col,risk_level:level||null,
         control_nominal:isNaN(nom)||nomEl?.value===''?null:nom,
-        risk_description:desc||''})
+        risk_description:desc||'',engineer:eng||'',
+        countermeasure:cm||'',issue_status:ist||'open'})
     });
     const data=await res.json();
     if(data.ok){
       settingsData[col]={risk_level:level||null,
         control_nominal:isNaN(nom)||nomEl?.value===''?null:nom,
-        risk_description:desc||'',updated_at:data.changed_at};
+        risk_description:desc||'',engineer:eng||'',
+        countermeasure:cm||'',issue_status:ist||'open',
+        updated_at:data.changed_at};
       // Refresh audit log
       const ar=await fetch('/api/settings').catch(()=>null);
       if(ar&&ar.ok){const sd=await ar.json();auditLog=sd.audit_log||[];}
@@ -1332,6 +1357,13 @@ async function saveRiskSettings(col){
   }catch(e){ statusEl.textContent='❌ 儲存失敗: '+e.message; }
 }
 
+async function openReport(col,line){
+  try{
+    const r=await fetch(`/api/open_report?col=${encodeURIComponent(col)}&line=${encodeURIComponent(line)}`);
+    const d=await r.json();
+    if(!d.ok) alert('找不到對應的 PDF 報告');
+  }catch(e){ alert('開啟失敗: '+e.message); }
+}
 function updateIssuesCount(){
   const n=Object.values(settingsData).filter(s=>s.risk_level==='high').length;
   document.getElementById('tabIssues').textContent='🔴 需改善'+(n?` (${n})`:'');
@@ -1344,7 +1376,10 @@ function renderIssues(){
     ic.innerHTML='<div class="alert alert-info"><div class="alert-title">目前沒有高風險點位</div><div>在「單點分析」頁面為各點位設定風險評估，高風險點位將在此集中管理。</div></div>';
     return;
   }
-  const fieldNames={risk_level:'風險等級',control_usl:'UCL',control_lsl:'LCL',control_nominal:'中值',risk_description:'風險說明'};
+  const fieldNames={risk_level:'風險等級',control_usl:'UCL',control_lsl:'LCL',control_nominal:'中值',risk_description:'風險說明',engineer:'負責工程師',countermeasure:'問題對策',issue_status:'問題狀態'};
+  const statusStyle={open:'background:#fee2e2;color:#dc2626','in work':'background:#fef9c3;color:#92400e',done:'background:#dbeafe;color:#1d4ed8',completed:'background:#dcfce7;color:#15803d'};
+  const isCMM=currentMode.startsWith('cmm_');
+  const cmmLine=currentMode.replace('cmm_','');
   let html=`<div class="sec-sub" style="margin-bottom:14px">${highCols.length} 個高風險點位需要改善措施</div>`;
   highCols.forEach(col=>{
     const s=settingsData[col];
@@ -1356,18 +1391,26 @@ function renderIssues(){
         `${fieldNames[k]||k}: ${f??'（空）'} → ${t??'（空）'}`).join(' ｜ ');
       return `<div class="audit-entry"><span class="audit-time">${e.changed_at}</span><span class="audit-change">${ch}</span></div>`;
     }).join('');
+    const ist=s.issue_status||'open';
+    const istSty=statusStyle[ist]||'';
+    const reportBtn=isCMM?`<button class="btn-sm" style="background:#6d28d9;border-color:#6d28d9;color:#fff" onclick="openReport('${escCol}','${cmmLine}')">📄 開啟報告</button>`:'';
     html+=`
     <div class="issue-card">
       <div class="issue-card-hd">
         <span class="issue-col">🔴 ${col}</span>
-        <div style="display:flex;align-items:center;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;${istSty}">${ist}</span>
           <span class="cpk ${cpkCls(r.cpk)}">${fmt(r.cpk,2)}</span>
+          ${reportBtn}
           <button class="btn-sm" onclick="switchToDetail('${escCol}')">開啟分析 →</button>
         </div>
       </div>
-      ${s.risk_description
-        ?`<div class="issue-desc-lbl">風險說明</div><div class="issue-desc">${s.risk_description}</div>`
-        :'<div style="color:var(--g400);font-size:12px;margin-top:4px">尚未填寫風險說明，請在單點分析頁面補充</div>'}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;font-size:12px">
+        <div><span style="color:var(--g500)">負責工程師：</span><b>${s.engineer||'—'}</b></div>
+        <div><span style="color:var(--g500)">問題狀態：</span><b>${ist}</b></div>
+      </div>
+      ${s.risk_description?`<div class="issue-desc-lbl" style="margin-top:6px">風險說明</div><div class="issue-desc">${s.risk_description}</div>`:''}
+      ${s.countermeasure?`<div class="issue-desc-lbl" style="margin-top:6px">問題對策</div><div class="issue-desc">${s.countermeasure}</div>`:''}
       ${colLogs.length?`<div class="audit-log-section" style="margin-top:10px"><div class="audit-log-title">最近變更</div>${auditHtml}</div>`:''}
     </div>`;
   });
