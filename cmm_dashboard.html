@@ -371,9 +371,11 @@ tr:hover td{background:var(--g50)}
             <div id="detTrendDiv" style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:10px;margin-bottom:12px;min-height:200px"></div>
             <div id="detHistDiv" style="background:#fff;border:1px solid var(--g200);border-radius:12px;padding:10px;min-height:120px"></div>
           </div>
-          <div id="detStats" class="stat-panel"><h3>統計摘要</h3><p style="color:var(--g400);font-size:13px">請選擇點位</p></div>
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div id="detStats" class="stat-panel"><h3>統計摘要</h3><p style="color:var(--g400);font-size:13px">請選擇點位</p></div>
+            <div id="detRisk"></div>
+          </div>
         </div>
-        <div id="detRisk"></div>
       </div>
 
       <div class="panel" id="panel-issues">
